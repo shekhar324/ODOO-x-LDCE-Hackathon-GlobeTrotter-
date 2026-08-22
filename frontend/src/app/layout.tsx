@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
 import { LenisProvider } from "@/providers/lenis-provider";
+import { AuthProvider } from "@/context/auth-context";
 import { Toaster } from "@/components/ui/sonner";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -35,8 +36,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-[#131313] text-[#e2e2e2] selection:bg-[#72dc85] selection:text-[#003914]">
         <LenisProvider>
           <QueryProvider>
-            {children}
-            <Toaster position="bottom-right" />
+            <AuthProvider>
+              {children}
+              <Toaster position="bottom-right" />
+            </AuthProvider>
           </QueryProvider>
         </LenisProvider>
       </body>
