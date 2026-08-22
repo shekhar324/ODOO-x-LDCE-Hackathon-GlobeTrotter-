@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
-import { IconArrowRight, IconEye, IconEyeOff } from "@tabler/icons-react";
+import { IconArrowRight, IconEye, IconEyeOff, IconLock, IconMail, IconUser, IconPhone, IconMapPin, IconSparkles } from "@tabler/icons-react";
 import { EditorialHeading } from "@/components/editorial/editorial-heading";
 import { useAuth } from "@/context/auth-context";
 
@@ -39,14 +39,15 @@ const signUpSchema = z
 type SignInForm = z.infer<typeof signInSchema>;
 type SignUpForm = z.infer<typeof signUpSchema>;
 
-// ─── Input Component ─────────────────────────────────────────────────────────
+// ─── Glass Input Component ───────────────────────────────────────────────────
 
-function FormInput({
+function GlassInput({
   id,
   label,
   type = "text",
   placeholder,
   error,
+  icon: Icon,
   rightSlot,
   ...props
 }: {
@@ -55,25 +56,29 @@ function FormInput({
   type?: string;
   placeholder?: string;
   error?: string;
+  icon?: React.ElementType;
   rightSlot?: React.ReactNode;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5 w-full">
       <div className="flex justify-between items-center">
-        <label className="font-sans text-sm text-[#020202]" htmlFor={id}>
+        <label className="font-sans text-xs font-medium uppercase tracking-wider text-neutral-300 flex items-center gap-1.5" htmlFor={id}>
+          {Icon && <Icon className="w-3.5 h-3.5 text-[#72dc85]" />}
           {label}
         </label>
         {rightSlot}
       </div>
-      <input
-        id={id}
-        type={type}
-        placeholder={placeholder}
-        className="w-full px-4 py-4 bg-transparent border border-[#020202] font-sans text-sm text-[#020202] placeholder:text-[#889486] focus:outline-none focus:ring-1 focus:ring-[#020202] transition-shadow"
-        {...props}
-      />
+      <div className="relative flex items-center">
+        <input
+          id={id}
+          type={type}
+          placeholder={placeholder}
+          className="w-full px-4 py-3.5 bg-white/10 border border-white/20 rounded-xl font-sans text-sm text-white placeholder:text-neutral-400 focus:outline-none focus:border-[#72dc85] focus:ring-1 focus:ring-[#72dc85] transition-all backdrop-blur-md"
+          {...props}
+        />
+      </div>
       {error && (
-        <p className="text-[#93000a] text-xs font-sans">{error}</p>
+        <p className="text-[#ff6b6b] text-xs font-sans mt-0.5">{error}</p>
       )}
     </div>
   );
@@ -98,7 +103,7 @@ function SignInPanel({ onSwitch }: { onSwitch: () => void }) {
       toast.error("Sign in failed", { description: error.message });
       return;
     }
-    toast.success("Welcome back");
+    toast.success("Welcome back to GlobeTrotter");
     const next = searchParams.get("next") ?? "/dashboard";
     router.push(next);
   };
@@ -108,26 +113,28 @@ function SignInPanel({ onSwitch }: { onSwitch: () => void }) {
       onSubmit={form.handleSubmit(onSubmit)}
       className="flex flex-col gap-6"
     >
-      <FormInput
+      <GlassInput
         id="signin-email"
-        label="Email"
+        label="Email Address"
         type="email"
+        icon={IconMail}
         placeholder="nomad@example.com"
         error={form.formState.errors.email?.message}
         {...form.register("email")}
       />
 
-      <FormInput
+      <GlassInput
         id="signin-password"
         label="Password"
         type={showPw ? "text" : "password"}
+        icon={IconLock}
         placeholder="••••••••"
         error={form.formState.errors.password?.message}
         rightSlot={
           <button
             type="button"
             onClick={() => setShowPw((v) => !v)}
-            className="text-[#020202] hover:opacity-60 transition-opacity"
+            className="text-neutral-300 hover:text-white transition-colors"
           >
             {showPw ? (
               <IconEyeOff className="w-4 h-4" />
@@ -142,21 +149,21 @@ function SignInPanel({ onSwitch }: { onSwitch: () => void }) {
       <button
         type="submit"
         disabled={form.formState.isSubmitting}
-        className="w-full mt-2 py-4 bg-[#2d9b4c] text-white font-sans text-sm hover:opacity-90 transition-opacity flex justify-center items-center gap-2 disabled:opacity-60 cursor-pointer"
+        className="w-full mt-2 py-4 bg-[#2d9b4c] hover:bg-[#38a454] text-white font-medium text-sm rounded-xl transition-all shadow-lg hover:shadow-[#2d9b4c]/30 flex justify-center items-center gap-2 disabled:opacity-60 cursor-pointer"
       >
-        {form.formState.isSubmitting ? "Signing in…" : "Sign In"}
-        <IconArrowRight className="w-5 h-5" />
+        <span>{form.formState.isSubmitting ? "Signing in..." : "Sign In to Access"}</span>
+        <IconArrowRight className="w-4 h-4" />
       </button>
 
-      <div className="mt-6 pt-6 border-t border-[#efefe7] text-center">
-        <p className="font-sans text-sm text-[#020202]">
+      <div className="mt-4 pt-6 border-t border-white/10 text-center">
+        <p className="font-sans text-sm text-neutral-300">
           No account yet?{" "}
           <button
             type="button"
             onClick={onSwitch}
-            className="underline decoration-1 underline-offset-4 hover:opacity-70 transition-opacity"
+            className="text-[#72dc85] font-semibold underline decoration-1 underline-offset-4 hover:text-white transition-colors cursor-pointer"
           >
-            Create one
+            Create your account
           </button>
         </p>
       </div>
@@ -167,7 +174,6 @@ function SignInPanel({ onSwitch }: { onSwitch: () => void }) {
 // ─── Sign Up Panel ────────────────────────────────────────────────────────────
 
 function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
-  const router = useRouter();
   const { signUp } = useAuth();
   const [showPw, setShowPw] = useState(false);
 
@@ -201,8 +207,8 @@ function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
       toast.error("Sign up failed", { description: error.message });
       return;
     }
-    toast.success("Account created!", {
-      description: "Check your email to confirm your address, then sign in.",
+    toast.success("Account created successfully!", {
+      description: "You may now sign in to start your journey.",
     });
     onSwitch();
   };
@@ -212,15 +218,16 @@ function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
       onSubmit={form.handleSubmit(onSubmit)}
       className="flex flex-col gap-4"
     >
-      <div className="flex gap-4">
-        <FormInput
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <GlassInput
           id="signup-fname"
           label="First Name"
+          icon={IconUser}
           placeholder="First"
           error={form.formState.errors.firstName?.message}
           {...form.register("firstName")}
         />
-        <FormInput
+        <GlassInput
           id="signup-lname"
           label="Last Name"
           placeholder="Last"
@@ -229,66 +236,70 @@ function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
         />
       </div>
 
-      <div className="flex gap-4">
-        <FormInput
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <GlassInput
           id="signup-email"
           label="Email Address"
           type="email"
+          icon={IconMail}
           placeholder="nomad@example.com"
           error={form.formState.errors.email?.message}
           {...form.register("email")}
         />
-        <FormInput
+        <GlassInput
           id="signup-phone"
           label="Phone Number"
           type="tel"
+          icon={IconPhone}
           placeholder="+1 234 567 8900"
           error={form.formState.errors.phone?.message}
           {...form.register("phone")}
         />
       </div>
 
-      <div className="flex gap-4">
-        <FormInput
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <GlassInput
           id="signup-city"
           label="City"
-          placeholder="City"
+          icon={IconMapPin}
+          placeholder="e.g., Paris"
           error={form.formState.errors.city?.message}
           {...form.register("city")}
         />
-        <FormInput
+        <GlassInput
           id="signup-country"
           label="Country"
-          placeholder="Country"
+          placeholder="e.g., France"
           error={form.formState.errors.country?.message}
           {...form.register("country")}
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="font-sans text-sm text-[#020202]" htmlFor="signup-info">
-          Additional Information
+      <div className="flex flex-col gap-1.5">
+        <label className="font-sans text-xs font-medium uppercase tracking-wider text-neutral-300" htmlFor="signup-info">
+          Travel Preferences / Bio
         </label>
         <textarea
           id="signup-info"
-          placeholder="Dietary requirements, travel preferences..."
-          className="w-full px-4 py-4 bg-transparent border border-[#020202] font-sans text-sm text-[#020202] placeholder:text-[#889486] focus:outline-none focus:ring-1 focus:ring-[#020202] transition-shadow resize-none h-24"
+          placeholder="Luxury stays, mountain hiking, culinary tours..."
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl font-sans text-sm text-white placeholder:text-neutral-400 focus:outline-none focus:border-[#72dc85] focus:ring-1 focus:ring-[#72dc85] transition-all resize-none h-20 backdrop-blur-md"
           {...form.register("additionalInfo")}
         />
       </div>
 
-      <div className="flex gap-4">
-        <FormInput
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <GlassInput
           id="signup-password"
           label="Password"
           type={showPw ? "text" : "password"}
-          placeholder="Min. 8 characters"
+          icon={IconLock}
+          placeholder="Min. 8 chars"
           error={form.formState.errors.password?.message}
           rightSlot={
             <button
               type="button"
               onClick={() => setShowPw((v) => !v)}
-              className="text-[#020202] hover:opacity-60 transition-opacity"
+              className="text-neutral-300 hover:text-white transition-colors"
             >
               {showPw ? (
                 <IconEyeOff className="w-4 h-4" />
@@ -299,7 +310,7 @@ function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
           }
           {...form.register("password")}
         />
-        <FormInput
+        <GlassInput
           id="signup-confirm"
           label="Confirm Password"
           type={showPw ? "text" : "password"}
@@ -312,19 +323,19 @@ function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
       <button
         type="submit"
         disabled={form.formState.isSubmitting}
-        className="w-full mt-4 py-4 bg-[#2d9b4c] text-white font-sans text-sm hover:opacity-90 transition-opacity flex justify-center items-center gap-2 disabled:opacity-60 cursor-pointer"
+        className="w-full mt-3 py-4 bg-[#2d9b4c] hover:bg-[#38a454] text-white font-medium text-sm rounded-xl transition-all shadow-lg hover:shadow-[#2d9b4c]/30 flex justify-center items-center gap-2 disabled:opacity-60 cursor-pointer"
       >
-        {form.formState.isSubmitting ? "Creating account…" : "Register User"}
-        <IconArrowRight className="w-5 h-5" />
+        <IconSparkles className="w-4 h-4" />
+        <span>{form.formState.isSubmitting ? "Registering..." : "Create Voyager Account"}</span>
       </button>
 
-      <div className="mt-2 pt-6 border-t border-[#efefe7] text-center">
-        <p className="font-sans text-sm text-[#020202]">
+      <div className="mt-2 pt-4 border-t border-white/10 text-center">
+        <p className="font-sans text-sm text-neutral-300">
           Already have an account?{" "}
           <button
             type="button"
             onClick={onSwitch}
-            className="underline decoration-1 underline-offset-4 hover:opacity-70 transition-opacity"
+            className="text-[#72dc85] font-semibold underline decoration-1 underline-offset-4 hover:text-white transition-colors cursor-pointer"
           >
             Sign in
           </button>
@@ -342,7 +353,6 @@ function AuthPageContent() {
     searchParams.get("tab") === "signup" ? "signup" : "signin"
   );
 
-  // Sync tab with URL param if it changes (e.g. from AuthGuard "Create Account" link)
   useEffect(() => {
     const t = searchParams.get("tab");
     if (t === "signup") setTab("signup");
@@ -350,28 +360,24 @@ function AuthPageContent() {
   }, [searchParams]);
 
   const headings = {
-    signin: { title: "Welcome Back", sub: "Access your curated itineraries and travel concierge." },
-    signup: { title: "Join GlobeTrotter", sub: "Create your account and start planning your next journey." },
+    signin: { title: "Welcome Back", sub: "Access your luxury itineraries, travel stories, and AI assistant." },
+    signup: { title: "Join GlobeTrotter", sub: "Create your verified traveler profile and start planning journeys." },
   };
 
   return (
-    <div className="bg-[#0e0e0e] text-[#e2e2e2] antialiased min-h-screen flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-[#c3eeb4] selection:text-[#002200]">
-      {/* Background texture */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' fill='%23fff'/%3E%3C/svg%3E")`,
-        }}
-      />
+    <div className="bg-[#0a0a0a] text-[#e2e2e2] antialiased min-h-screen flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-[#c3eeb4] selection:text-[#002200]">
+      {/* Dynamic Glassmorphism Background Spheres */}
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-[#2d9b4c]/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-[#c3eeb4]/15 rounded-full blur-[140px] pointer-events-none" />
 
       {/* Nav */}
-      <nav className="fixed top-0 left-1/2 -translate-x-1/2 w-[95%] max-w-[1200px] z-50 flex justify-between items-center px-6 md:px-12 py-4 bg-[#c3eeb4] text-[#002200] rounded-full mt-6">
-        <div className="font-serif text-2xl tracking-tighter font-light">
+      <nav className="fixed top-0 left-1/2 -translate-x-1/2 w-[92%] max-w-[1200px] z-50 flex justify-between items-center px-6 md:px-10 py-4 backdrop-blur-md bg-white/10 border border-white/15 text-white rounded-full mt-6 shadow-xl">
+        <Link href="/" className="font-serif text-2xl tracking-tighter font-light">
           GlobeTrotter
-        </div>
+        </Link>
         <Link
           href="/"
-          className="font-sans text-sm px-6 py-3 bg-[#020202] text-white rounded-full hover:opacity-80 transition-opacity"
+          className="font-sans text-xs tracking-wider uppercase px-5 py-2.5 bg-white text-[#0a0a0a] rounded-full font-semibold hover:bg-neutral-200 transition-colors"
         >
           Return Home
         </Link>
@@ -386,27 +392,27 @@ function AuthPageContent() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.3 }}
-            className="text-center mb-12 max-w-2xl"
+            className="text-center mb-10 max-w-2xl"
           >
-            <EditorialHeading className="text-[56px] md:text-[80px] tracking-tight leading-none text-white mb-4 font-thin">
+            <EditorialHeading className="text-[52px] md:text-[76px] tracking-tight leading-none text-white mb-4 font-thin">
               {headings[tab].title}
             </EditorialHeading>
-            <p className="font-sans text-lg text-[#becabb]">
+            <p className="font-sans text-base md:text-lg text-neutral-300">
               {headings[tab].sub}
             </p>
           </motion.div>
         </AnimatePresence>
 
-        {/* Tab Switcher */}
-        <div className="flex border border-white/20 mb-10">
+        {/* Glass Tab Switcher */}
+        <div className="flex p-1.5 backdrop-blur-xl bg-white/10 border border-white/20 rounded-full mb-10 shadow-lg">
           {(["signin", "signup"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-10 py-3 font-sans text-sm transition-colors cursor-pointer ${
+              className={`px-8 py-2.5 rounded-full font-sans text-xs uppercase tracking-wider font-semibold transition-all cursor-pointer ${
                 tab === t
-                  ? "bg-[#c3eeb4] text-[#002200]"
-                  : "text-[#becabb] hover:text-white"
+                  ? "bg-[#2d9b4c] text-white shadow-md"
+                  : "text-neutral-300 hover:text-white"
               }`}
             >
               {t === "signin" ? "Sign In" : "Sign Up"}
@@ -414,8 +420,8 @@ function AuthPageContent() {
           ))}
         </div>
 
-        {/* Card */}
-        <div className="w-full max-w-[640px] bg-white shadow-2xl shadow-black/50 p-10 relative z-20">
+        {/* Glass Card */}
+        <div className="w-full max-w-[620px] backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl p-8 md:p-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative z-20">
           <AnimatePresence mode="wait">
             <motion.div
               key={tab}
@@ -439,7 +445,7 @@ function AuthPageContent() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center text-white font-sans tracking-widest text-sm uppercase">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white font-sans tracking-widest text-sm uppercase">Loading Authentication...</div>}>
       <AuthPageContent />
     </Suspense>
   );

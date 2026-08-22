@@ -8,9 +8,9 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# CORS configuration — allow the frontend origin during development
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
-CORS(app, origins=[o.strip() for o in cors_origins.split(",")], supports_credentials=False)
+# CORS configuration — allow frontend origins during development
+cors_origins = os.getenv("CORS_ORIGINS", "*")
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
 
 # Maximum message length to prevent abuse
 MAX_MESSAGE_LENGTH = 4000
@@ -82,4 +82,4 @@ def chat():
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     debug = os.getenv("FLASK_DEBUG", "1") == "1"
-    app.run(port=port, debug=debug)
+    app.run(host="0.0.0.0", port=port, debug=debug)

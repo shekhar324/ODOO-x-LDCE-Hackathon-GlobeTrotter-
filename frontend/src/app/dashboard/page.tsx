@@ -76,7 +76,7 @@ export default function DashboardPage() {
             </h1>
             <div className="flex flex-wrap items-center gap-4 mt-8">
               <Link 
-                href="/build" 
+                href="/itinerary/new" 
                 className="bg-[#2d9b4c] text-white px-8 py-3.5 rounded-[10px] font-sans text-sm flex items-center gap-2 hover:bg-[#38a454] transition-colors duration-300 cursor-pointer"
               >
                 <IconPlus className="w-4 h-4" />
@@ -112,7 +112,7 @@ export default function DashboardPage() {
             ) : activeTrips.length === 0 ? (
               <div className="text-white/50 text-sm font-sans flex flex-col gap-4">
                 <p>You have no active itineraries.</p>
-                <Link href="/build" className="text-[#72dc85] underline underline-offset-4">Plan a new trip</Link>
+                <Link href="/itinerary/new" className="text-[#72dc85] underline underline-offset-4">Plan a new trip</Link>
               </div>
             ) : (
               activeTrips.map((trip) => {

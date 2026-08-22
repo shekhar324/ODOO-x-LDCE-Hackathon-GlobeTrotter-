@@ -18,8 +18,9 @@ export function NavigationPill({ onContactClick }: NavigationPillProps) {
   const authNavItems = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Discover", href: "/discover" },
-    { label: "Builder", href: "/build" },
+    { label: "Calendar", href: "/calendar" },
     { label: "Community", href: "/community" },
+    { label: "Builder", href: "/itinerary/new" },
   ];
 
   const publicNavItems = [
@@ -96,7 +97,7 @@ export function NavigationPill({ onContactClick }: NavigationPillProps) {
               </button>
 
               <button
-                onClick={onContactClick}
+                onClick={() => onContactClick?.()}
                 className="bg-[#020202] text-white px-5 py-2.5 rounded-full text-xs font-normal hover:bg-neutral-800 transition-opacity flex items-center gap-2 cursor-pointer"
               >
                 <span>Get in touch</span>

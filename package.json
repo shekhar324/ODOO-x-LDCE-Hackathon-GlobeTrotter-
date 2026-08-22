@@ -1,0 +1,14 @@
+{
+  "name": "globetrotter-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "predev": "npx --yes kill-port 5000 3000 || true",
+    "dev": "concurrently -n \"NEXT,FLASK\" -c \"cyan.bold,yellow.bold\" \"npm --prefix frontend run dev\" \"cd chatbot && ./venv/bin/python app.py\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npx --yes kill-port 5000 || true && cd chatbot && ./venv/bin/python app.py"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

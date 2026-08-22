@@ -125,20 +125,30 @@ def get_gemini_response(user_message: str, history: list = None) -> str:
                         )
                     )
 
-        # Create a stateful chat session with the conversation history
-        chat = client.chats.create(
-            model="gemini-3.6-flash",
-            history=history_contents,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_INSTRUCTION,
-                temperature=0.7,
-                max_output_tokens=2048,
-            ),
-        )
+        # Candidate models to try in order of preference
+        candidate_models = ["gemini-3.6-flash", "gemini-3-flash-preview", "gemini-3.5-flash", "gemini-flash-latest"]
+        
+        last_error = None
+        for model_name in candidate_models:
+            try:
+                chat = client.chats.create(
+                    model=model_name,
+                    history=history_contents,
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_INSTRUCTION,
+                        temperature=0.7,
+                        max_output_tokens=2048,
+                    ),
+                )
 
-        response = chat.send_message(user_message)
-        return response.text
+                response = chat.send_message(user_message)
+                return response.text
+            except Exception as model_err:
+                last_error = model_err
+                print(f"Model {model_name} failed: {model_err}. Trying fallback model...")
 
+        print("All candidate models failed. Last error:", last_error)
+        return "I'm having trouble connecting to my travel knowledge base right now. Please try again in a moment."
     except Exception as e:
         import traceback
         print("Error in get_gemini_response:")

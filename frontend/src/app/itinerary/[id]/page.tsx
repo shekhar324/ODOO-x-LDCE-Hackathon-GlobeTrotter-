@@ -52,7 +52,7 @@ export default function PublicItineraryView() {
     toast.success("Itinerary Copied to Builder", {
       description: "You can now edit and customize this trip in your Itinerary Builder.",
     });
-    router.push("/build");
+    router.push("/itinerary/new");
   };
 
   const handleShareLink = () => {
@@ -232,7 +232,7 @@ export default function PublicItineraryView() {
                 </button>
 
                 <Link 
-                  href={`/build/${data.trip.id}/analytics`} 
+                  href="/profile" 
                   className="border border-white/30 text-white rounded-[10.08px] px-10 py-3 font-sans text-sm text-center hover:bg-white hover:text-black transition-colors"
                 >
                   View Cost Breakdown
