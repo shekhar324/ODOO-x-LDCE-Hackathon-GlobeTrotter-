@@ -19,6 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { NavigationPill } from "@/components/editorial/navigation-pill";
+import { ForestCTAButton } from "@/components/editorial/forest-cta-button";
+import { HeroServiceCard } from "@/components/editorial/hero-service-card";
+import { Footer } from "@/components/editorial/footer";
+import { EditorialHeading } from "@/components/editorial/editorial-heading";
+
 // --- Zod Schemas ---
 const planTripSchema = z.object({
   destination: z.string().min(2, "Destination city or region required"),
@@ -67,7 +73,7 @@ const fetchHeroDestinations = async (): Promise<DestinationCard[]> => {
       tag: "Amalfi Coast",
       subtitle: "Pastel cliffside villas along Mediterranean waters",
       image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDgdVwRVuya7lHyM8jkHySLOZ1RuqM75Rdhnn8GgHhI6FicfrH_YNz_MMY0BfVHv_OhAWrmaZb9lwWJlHxpKp6sVSdbV7bZkq_1oxEVQlXL6ydYBHnSRXjpiqGhoOc0O9svU57DglK2IdbQrO_c7pT74FIxdqrTn1N7JitdvL_T1YYTUpbGaCC-gDbhIhtyWUJxkgBADpSKzoL2FoI7oqTC_frX_6A0ybZTdUWM6k8Z5YZcOIiCT_aH",
+        "https://images.unsplash.com/photo-1596736743518-eef8c49026b7?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
       id: "kyoto",
@@ -76,7 +82,7 @@ const fetchHeroDestinations = async (): Promise<DestinationCard[]> => {
       tag: "Kyoto, Japan",
       subtitle: "Zen gardens, cedar forests, and historic tea houses",
       image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuB8oRGpwXq_3iNhwW6t-v6gmfVRhNuOeAtvbIIAsIllUkUmiN-uk1QkyL36c9RbXCzLOxRBVfTzGYxFEOs78leUbdt-oKDbZdTh8JerRcJ8z0gHUcmnn2QiXusSOj9iqMRxYNKAoYlGeKT44Ofvx8wboJAKc7paIaej0M2_Ods6l5581QaNYyiOPVkmh8TOAPfX7HlhqK_BdVkPsPm4c-0LtGszE5pTkO-0JhpTuv1c3OOenNLin-O-",
+        "https://images.unsplash.com/photo-1522547902298-51566e4fb383?q=80&w=1335&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
       id: "marrakech",
@@ -85,7 +91,7 @@ const fetchHeroDestinations = async (): Promise<DestinationCard[]> => {
       tag: "Marrakech",
       subtitle: "Private riad sanctuaries with handcrafted tilework",
       image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuC6hrT16e1LQEJHRDMdchNYvKMYTOpNbOOPGtFE9DPeG5_Q3pvVxpGW4RnA-O72gbpD44LC0AMujWGZs9tv84uUu5Iot_ef_bpe8d7btRDUvMWfx4BMiBD9tR4111VSApT2MMvnLLBQxlrvXTib6AotRvHou5D_46Z0QWsTHeIGyHQqKm9WGDQAgyu8Ef5HERsbQSGTXSJyEIwPbwFmyj3kdwyw57BKvx9YF-tHUiC0nhDpox_YQ3q-",
+        "https://images.unsplash.com/photo-1653323792487-6ecc6217040b?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
       id: "bigsur",
@@ -94,7 +100,7 @@ const fetchHeroDestinations = async (): Promise<DestinationCard[]> => {
       tag: "Big Sur",
       subtitle: "Pacific coastal bluffs and ancient redwood canopy",
       image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBmsOlPDifSWOyuL2KXOyQ1bXFj4vg6WTd8KcbYYE-EJZNEuFRgW-kUsDNpggxRo0YudE4H5nMHFCBeDrNps1sJu7oEWKIaZTa4flgFkLu7BdU5yGzQnECojd_yEN6O5aZ9UQ4WBQUJqHDLLldtdoIkhfbioZ7lWCEafvGX3j0SxdT6_2OWC9YQHwWUuevGNCzmxcwyI6FeqTI6xa7-ugGd7cj6hKghCoWCWgGxVI_kHb4gt0Jci2_7",
+        "https://images.unsplash.com/photo-1508107222753-0c236c337911?q=80&w=1286&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
   ];
 };
@@ -205,49 +211,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#131313] text-[#e2e2e2] flex flex-col font-sans selection:bg-[#c3eeb4] selection:text-[#002200] relative overflow-x-hidden">
       {/* --- Sticky Mint Boarding Pass Navigation --- */}
-      <header className="fixed top-0 left-1/2 -translate-x-1/2 w-[94%] max-w-[1200px] z-50 mt-4 mx-auto">
-        <nav
-          aria-label="Main Navigation"
-          className="flex justify-between items-center px-6 sm:px-8 py-3.5 bg-[#c3eeb4] text-[#002200] rounded-full transition-transform duration-200"
-        >
-          <div className="font-sans text-xl sm:text-2xl font-normal tracking-tighter text-[#002200]">
-            GlobeTrotter
-          </div>
-
-          <div className="hidden md:flex gap-8 items-center text-sm font-normal text-[#2b4f24]">
-            <a
-              href="#trips"
-              className="hover:text-[#002200] transition-colors"
-            >
-              Trips
-            </a>
-            <a
-              href="#discover"
-              className="text-[#002200] font-normal border-b border-[#002200] pb-0.5"
-            >
-              Discover
-            </a>
-            <a
-              href="#concierge"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsContactModalOpen(true);
-              }}
-              className="hover:text-[#002200] transition-colors"
-            >
-              Concierge
-            </a>
-          </div>
-
-          <button
-            onClick={() => setIsContactModalOpen(true)}
-            className="bg-[#020202] text-white px-5 py-2.5 rounded-full text-xs font-normal hover:bg-neutral-800 transition-opacity flex items-center gap-2"
-          >
-            <span>Get in touch</span>
-            <IconArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </nav>
-      </header>
+      <NavigationPill onContactClick={() => setIsContactModalOpen(true)} />
 
       {/* --- Main Body --- */}
       <main className="flex-1">
@@ -266,46 +230,20 @@ export default function HomePage() {
               Your World, Curated
             </h2>
 
-            <button
-              onClick={() => setIsPlanModalOpen(true)}
-              className="bg-[#38a454] text-white px-8 py-3.5 rounded-[10px] text-sm font-normal hover:bg-[#2d9b4c] transition-opacity cursor-pointer inline-flex items-center gap-2"
-            >
+            <ForestCTAButton onClick={() => setIsPlanModalOpen(true)}>
               <span>Plan New Trip</span>
-            </button>
+            </ForestCTAButton>
           </div>
 
           {/* Horizontal Scroll Service/Destination Cards */}
           <div className="w-full mt-20 overflow-x-auto hide-scrollbar snap-x snap-mandatory">
             <div className="flex gap-6 px-6 sm:px-12 md:px-24 w-max mx-auto pb-4">
               {(heroCards || []).map((card) => (
-                <div
+                <HeroServiceCard
                   key={card.id}
+                  card={card}
                   onClick={() => setIsPlanModalOpen(true)}
-                  className="w-[300px] sm:w-[380px] h-[480px] sm:h-[530px] bg-[#1f1f1f] rounded-none relative snap-center flex-shrink-0 group overflow-hidden border border-[#353535] cursor-pointer"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={card.image}
-                    alt={card.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60 pointer-events-none" />
-
-                  <div className="absolute top-6 left-6 z-10">
-                    <span className="text-xs text-white border border-white/30 px-3.5 py-1.5 rounded-full backdrop-blur-sm font-normal">
-                      {card.tag}
-                    </span>
-                  </div>
-
-                  <div className="absolute bottom-6 left-6 right-6 z-10 text-left">
-                    <h3 className="font-serif text-2xl text-white font-light mb-1">
-                      {card.title}
-                    </h3>
-                    <p className="font-sans text-xs text-neutral-300 opacity-90 line-clamp-2">
-                      {card.subtitle}
-                    </p>
-                  </div>
-                </div>
+                />
               ))}
             </div>
           </div>
@@ -316,9 +254,9 @@ export default function HomePage() {
           <div className="w-full max-w-[1200px] px-6 sm:px-8">
             {/* Journal Header */}
             <div className="mb-12">
-              <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl font-light text-[#020202]">
+              <EditorialHeading as="h2" className="text-4xl sm:text-5xl md:text-6xl text-[#020202]">
                 The Travel Journal
-              </h2>
+              </EditorialHeading>
             </div>
 
             {/* Featured Editorial Article */}
@@ -363,9 +301,9 @@ export default function HomePage() {
 
             {/* Curated Itineraries Section Header */}
             <div id="trips" className="mb-8 border-b border-[#020202]/10 pb-4">
-              <h3 className="font-sans text-2xl sm:text-3xl text-[#020202] font-normal tracking-tight">
+              <EditorialHeading variant="sans" as="h3" className="text-2xl sm:text-3xl text-[#020202] tracking-tight">
                 Curated Itineraries
-              </h3>
+              </EditorialHeading>
             </div>
 
             {/* Curated Itineraries Grid */}
@@ -441,37 +379,7 @@ export default function HomePage() {
       </main>
 
       {/* --- Footer Component --- */}
-      <footer className="w-full py-12 px-6 sm:px-12 bg-[#0e0e0e] border-t border-[#353535] flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-[#becabb]">
-        <div className="font-sans text-2xl font-normal text-[#e2e2e2] tracking-tighter">
-          GlobeTrotter
-        </div>
-
-        <nav className="flex flex-wrap justify-center gap-8 font-normal">
-          <a href="#" className="hover:text-white transition-colors">
-            Privacy Policy
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Terms of Service
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Sustainability
-          </a>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setIsContactModalOpen(true);
-            }}
-            className="hover:text-white transition-colors"
-          >
-            Contact Private Office
-          </a>
-        </nav>
-
-        <div className="text-center md:text-right text-neutral-500 font-normal">
-          © 2026 GlobeTrotter Luxury Travel Planning. All rights reserved.
-        </div>
-      </footer>
+      <Footer onContactClick={() => setIsContactModalOpen(true)} />
 
       {/* --- Plan New Trip Modal --- */}
       <Dialog open={isPlanModalOpen} onOpenChange={setIsPlanModalOpen}>
