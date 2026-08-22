@@ -1,34 +1,25 @@
 "use client";
 
-import React, { useSyncExternalStore } from "react";
+import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { NavigationPill } from "@/components/editorial/navigation-pill";
 import { Footer } from "@/components/editorial/footer";
 import { EditorialHeading } from "@/components/editorial/editorial-heading";
 import { IconLock, IconArrowRight } from "@tabler/icons-react";
 
-function subscribe(callback: () => void) {
-  window.addEventListener("storage", callback);
-  return () => window.removeEventListener("storage", callback);
-}
-
-function getSnapshot() {
-  return true;
-}
-
-function getServerSnapshot() {
-  return false;
-}
-
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, login } = useAuth();
-  const isMounted = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
-  if (!isMounted) {
+  // Show a minimal loading state while Supabase resolves the session.
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#131313] text-[#e2e2e2] flex items-center justify-center">
-        <div className="font-serif text-2xl animate-pulse text-[#72dc85]">GlobeTrotter</div>
+        <div className="font-serif text-2xl animate-pulse text-[#72dc85]">
+          GlobeTrotter
+        </div>
       </div>
     );
   }
@@ -48,23 +39,24 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           </EditorialHeading>
 
           <p className="font-sans text-lg text-[#becabb] max-w-md mb-10">
-            Please log in or create an account to access your personal dashboard, itinerary builder, and concierge preferences.
+            Please log in or create an account to access your personal
+            dashboard, itinerary builder, and concierge preferences.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <Link
-              href="/login"
+              href="/auth"
               className="bg-[#2d9b4c] text-white px-8 py-4 rounded-[10px] font-sans text-sm hover:bg-[#38a454] transition-colors flex items-center gap-2"
             >
-              <span>Login to Account</span>
+              <span>Sign In</span>
               <IconArrowRight className="w-4 h-4" />
             </Link>
 
             <button
-              onClick={() => login("guest@globetrotter.app")}
+              onClick={() => router.push("/auth?tab=signup")}
               className="bg-transparent border border-white/30 text-white px-8 py-4 rounded-[10px] font-sans text-sm hover:bg-white hover:text-black transition-colors cursor-pointer"
             >
-              Quick Demo Access
+              Create Account
             </button>
           </div>
         </main>
