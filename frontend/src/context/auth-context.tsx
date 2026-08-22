@@ -1,75 +1,168 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
+import type { Tables } from "@/lib/supabase/types";
 
-interface User {
-  name: string;
-  email: string;
-  avatar?: string;
-}
+type Profile = Tables<"profiles">;
 
 interface AuthContextType {
+  /** True once we have resolved the session (initial loading done) */
+  isLoading: boolean;
+  /** Supabase session object, null when signed out */
+  session: Session | null;
+  /** Supabase auth user, null when signed out */
+  user: SupabaseUser | null;
+  /** GlobeTrotter profile row from public.profiles */
+  profile: Profile | null;
+  /** Whether the user is authenticated */
   isAuthenticated: boolean;
-  user: User | null;
-  login: (email: string) => void;
-  logout: () => void;
+  /** Sign up with email + password + optional full name */
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
+  /** Sign in with email + password */
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  /** Sign out and clear local state */
+  signOut: () => Promise<void>;
+  /** Refresh the profile from the database */
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
-  isAuthenticated: false,
+  isLoading: true,
+  session: null,
   user: null,
-  login: () => {},
-  logout: () => {},
+  profile: null,
+  isAuthenticated: false,
+  signUp: async () => ({ error: null }),
+  signIn: async () => ({ error: null }),
+  signOut: async () => {},
+  refreshProfile: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("gt_auth") === "true";
-    }
-    return false;
-  });
+  const supabase = createClient();
 
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("gt_auth") === "true") {
-      const storedUser = localStorage.getItem("gt_user");
-      if (storedUser) {
-        try {
-          return JSON.parse(storedUser);
-        } catch {
-          // ignore
-        }
+  const [isLoading, setIsLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  const fetchProfile = useCallback(
+    async (userId: string) => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      setProfile(data ?? null);
+    },
+    [supabase]
+  );
+
+  const refreshProfile = useCallback(async () => {
+    if (user) await fetchProfile(user.id);
+  }, [user, fetchProfile]);
+
+  // Initialise: get current session and subscribe to auth changes
+  useEffect(() => {
+    let mounted = true;
+
+    const init = async () => {
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+
+      if (currentSession?.user) {
+        await fetchProfile(currentSession.user.id);
       }
-      return {
-        name: "Abhishek Thormothe",
-        email: "abhishek@globetrotter.app",
-        avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAQXweEahHINIjm8wTk4JDPQ0oFqvkq_ylbrP9KZOVM3ErdkvsYfN-O3nhE6xnTr7U5DL98bVwQkNAVMsikB8LxTE735JTAOKStWBVQypt02_sCz75D4HF-eoeBgS_GiHgjyz8TCHr9LOXQUHfjXp014OEWPOMMyq0wmv0OK7cN6mSlrcAZgS7-9y6G5yQsrAwRH9jxotAX3H66zQfY-5KG2ZQQr3WHmspM4vVx1k2t9HLYX-qV_7oH",
-      };
-    }
-    return null;
-  });
 
-  const login = (email: string) => {
-    setIsAuthenticated(true);
-    const userObj = {
-      name: email.split("@")[0].replace(".", " ") || "Abhishek Thormothe",
-      email: email || "abhishek@globetrotter.app",
-      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAQXweEahHINIjm8wTk4JDPQ0oFqvkq_ylbrP9KZOVM3ErdkvsYfN-O3nhE6xnTr7U5DL98bVwQkNAVMsikB8LxTE735JTAOKStWBVQypt02_sCz75D4HF-eoeBgS_GiHgjyz8TCHr9LOXQUHfjXp014OEWPOMMyq0wmv0OK7cN6mSlrcAZgS7-9y6G5yQsrAwRH9jxotAX3H66zQfY-5KG2ZQQr3WHmspM4vVx1k2t9HLYX-qV_7oH",
+      setIsLoading(false);
     };
-    setUser(userObj);
-    localStorage.setItem("gt_auth", "true");
-    localStorage.setItem("gt_user", JSON.stringify(userObj));
-  };
 
-  const logout = () => {
-    setIsAuthenticated(false);
+    init();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      if (!mounted) return;
+
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+
+      if (newSession?.user) {
+        await fetchProfile(newSession.user.id);
+      } else {
+        setProfile(null);
+      }
+
+      setIsLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const signUp = useCallback(
+    async (email: string, password: string, fullName?: string) => {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName ?? "" },
+        },
+      });
+      return { error: error as Error | null };
+    },
+    [supabase]
+  );
+
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error: error as Error | null };
+    },
+    [supabase]
+  );
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    setSession(null);
     setUser(null);
-    localStorage.removeItem("gt_auth");
-    localStorage.removeItem("gt_user");
-  };
+    setProfile(null);
+  }, [supabase]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isLoading,
+        session,
+        user,
+        profile,
+        isAuthenticated: !!session,
+        signUp,
+        signIn,
+        signOut,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

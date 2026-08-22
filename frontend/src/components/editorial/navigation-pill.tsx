@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { IconArrowRight, IconUser, IconLogout, IconLogin } from "@tabler/icons-react";
 import { useAuth } from "@/context/auth-context";
 
@@ -12,7 +12,8 @@ interface NavigationPillProps {
 
 export function NavigationPill({ onContactClick }: NavigationPillProps) {
   const pathname = usePathname();
-  const { isAuthenticated, logout } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, signOut } = useAuth();
 
   const authNavItems = [
     { label: "Dashboard", href: "/dashboard" },
@@ -87,7 +88,7 @@ export function NavigationPill({ onContactClick }: NavigationPillProps) {
               </Link>
 
               <button
-                onClick={logout}
+                onClick={async () => { await signOut(); router.push("/"); }}
                 className="p-2 rounded-full border border-[#2b4f24]/30 hover:bg-[#002200]/10 text-[#002200] transition-colors"
                 title="Sign Out"
               >
@@ -104,7 +105,7 @@ export function NavigationPill({ onContactClick }: NavigationPillProps) {
             </>
           ) : (
             <Link
-              href="/login"
+              href="/auth"
               className="bg-[#020202] text-white px-5 py-2.5 rounded-full text-xs font-normal hover:bg-neutral-800 transition-opacity flex items-center gap-2 cursor-pointer"
             >
               <IconLogin className="w-3.5 h-3.5" />
