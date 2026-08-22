@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
+import { LenisProvider } from "@/providers/lenis-provider";
 import { Toaster } from "@/components/ui/sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
+  weight: ["200", "400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const sourceSerif4 = Source_Serif_4({
   subsets: ["latin"],
+  variable: "--font-source-serif-4",
+  weight: ["200", "300", "400", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "GlobeTrotter",
-  description: "GlobeTrotter frontend application",
+  title: "GlobeTrotter | High-End Editorial Travel",
+  description: "Curated travel luxury and smart itinerary planning.",
 };
 
 export default function RootLayout({
@@ -27,13 +30,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} ${sourceSerif4.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col">
-        <QueryProvider>
-          {children}
-          <Toaster />
-        </QueryProvider>
+      <body className="min-h-full flex flex-col font-sans bg-[#131313] text-[#e2e2e2] selection:bg-[#72dc85] selection:text-[#003914]">
+        <LenisProvider>
+          <QueryProvider>
+            {children}
+            <Toaster position="bottom-right" />
+          </QueryProvider>
+        </LenisProvider>
       </body>
     </html>
   );
