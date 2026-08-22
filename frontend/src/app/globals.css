@@ -9,12 +9,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-plus-jakarta-sans), sans-serif;
   --font-serif: var(--font-source-serif-4), serif;
+  --font-calligraphy: var(--font-cormorant), serif;
 
   --color-linen-cream: #e4e9dc;
   --color-parchment: #efefe7;
   --color-paper-white: #ffffff;
   --color-carbon: #020202;
-  --color-obsidian: #131313;
+  --color-obsidian: #0c0c0d;
   --color-forest-command: #2d9b4c;
   --color-mint-boarding-pass: #c3eeb4;
 
@@ -31,19 +32,46 @@
 }
 
 :root {
-  --background: #131313;
-  --foreground: #e2e2e2;
-  --card: #1f1f1f;
-  --card-foreground: #e2e2e2;
+  --background: #0c0c0d;
+  --foreground: #f5f5f7;
+  --card: #141417;
+  --card-foreground: #f5f5f7;
   --primary: #72dc85;
   --primary-foreground: #003914;
-  --border: rgba(255, 255, 255, 0.1);
-  --radius: 0.625rem;
+  --border: rgba(255, 255, 255, 0.08);
+  --radius: 1rem;
 }
 
 .dark {
-  --background: #131313;
-  --foreground: #e2e2e2;
+  --background: #0c0c0d;
+  --foreground: #f5f5f7;
+}
+
+.glass-apple {
+  background: rgba(20, 20, 24, 0.65);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.glass-apple-subtle {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-apple-pill {
+  background: rgba(25, 25, 30, 0.72);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.font-calligraphy {
+  font-family: var(--font-cormorant), "Newsreader", "Playfair Display", serif;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -52,4 +80,4 @@
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
+}
