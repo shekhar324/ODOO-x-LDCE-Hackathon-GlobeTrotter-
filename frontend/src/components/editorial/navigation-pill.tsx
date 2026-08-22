@@ -19,7 +19,7 @@ export function NavigationPill({ onContactClick }: NavigationPillProps) {
     { label: "Dashboard", href: "/dashboard" },
     { label: "Discover", href: "/discover" },
     { label: "Builder", href: "/build" },
-    { label: "Analytics", href: "/analytics" },
+    { label: "Community", href: "/community" },
   ];
 
   const publicNavItems = [

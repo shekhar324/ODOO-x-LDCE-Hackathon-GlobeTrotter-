@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.15"
   }
@@ -213,6 +215,13 @@ export type Database = {
             foreignKeyName: "community_posts_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -220,13 +229,18 @@ export type Database = {
       }
       profiles: {
         Row: {
+          additional_info: string | null
           avatar_url: string | null
           bio: string | null
+          city: string | null
           country: string | null
           created_at: string
+          first_name: string | null
           full_name: string | null
           id: string
           is_public: boolean
+          last_name: string | null
+          phone_number: string | null
           preferred_language: string | null
           travel_interests: string[] | null
           travel_style: string | null
@@ -234,13 +248,18 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          additional_info?: string | null
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
           country?: string | null
           created_at?: string
+          first_name?: string | null
           full_name?: string | null
           id: string
           is_public?: boolean
+          last_name?: string | null
+          phone_number?: string | null
           preferred_language?: string | null
           travel_interests?: string[] | null
           travel_style?: string | null
@@ -248,13 +267,18 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          additional_info?: string | null
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
           country?: string | null
           created_at?: string
+          first_name?: string | null
           full_name?: string | null
           id?: string
           is_public?: boolean
+          last_name?: string | null
+          phone_number?: string | null
           preferred_language?: string | null
           travel_interests?: string[] | null
           travel_style?: string | null
@@ -398,6 +422,13 @@ export type Database = {
             foreignKeyName: "trip_expenses_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_expenses_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -423,6 +454,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "trip_members_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trip_summary"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trip_members_trip_id_fkey"
             columns: ["trip_id"]
@@ -476,6 +514,13 @@ export type Database = {
             columns: ["city_id"]
             isOneToOne: false
             referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_stops_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trip_summary"
             referencedColumns: ["id"]
           },
           {
@@ -610,6 +655,7 @@ export type Database = {
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
@@ -706,6 +752,23 @@ export type Enums<
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {

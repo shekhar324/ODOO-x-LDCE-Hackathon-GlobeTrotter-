@@ -24,8 +24,8 @@ interface AuthContextType {
   profile: Profile | null;
   /** Whether the user is authenticated */
   isAuthenticated: boolean;
-  /** Sign up with email + password + optional full name */
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
+  /** Sign up with email + password + metadata */
+  signUp: (email: string, password: string, metadata?: Record<string, string>) => Promise<{ error: Error | null }>;
   /** Sign in with email + password */
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   /** Sign out and clear local state */
@@ -118,12 +118,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = useCallback(
-    async (email: string, password: string, fullName?: string) => {
+    async (email: string, password: string, metadata?: Record<string, string>) => {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: fullName ?? "" },
+          data: metadata ?? {},
         },
       });
       return { error: error as Error | null };

@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useParams } from "next/navigation";
+import { useItinerary } from "@/hooks/use-itinerary";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Full name required"),
@@ -25,6 +27,10 @@ type ContactForm = z.infer<typeof contactSchema>;
 
 export default function PublicItineraryView() {
   const router = useRouter();
+  const params = useParams();
+  const tripId = params.id as string;
+  const { data, isLoading } = useItinerary(tripId);
+
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -81,164 +87,141 @@ export default function PublicItineraryView() {
       {/* Main Content Canvas */}
       <main className="w-full">
         {/* Hero Section (Dark Canvas) */}
-        <section className="relative w-full h-[870px] bg-[#0e0e0e] text-white overflow-hidden">
-          {/* Background Image */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center w-full h-full" 
-            style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuB-XusGtLDp62pNDiNNKIfj47j_juooJIdvYb4DHVlOn0IIR9ZCh3jPnD3raL1PtOlhjWHf5sqvFpC3C9iy7fjaAHqiR1LzSoaBEhgAHZFUksHoOPEApjBLdJ9sKmj4pdTHWizDaI--wHto8TrXm8MYf6wCvgTD_pfADcxfacqW62eK6HAYBP3Gu_V76Z3dDqF-Zx4R4OOF3Ti08WOkp8QyiFTTwfvdWxSJNd2uDouyuPfc2F6IFPZp')" }}
-          ></div>
-          {/* Gradient Overlay for legibility */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0e0e0e]/70"></div>
-          
-          {/* Hero Content */}
-          <div className="relative z-10 w-full max-w-[1200px] mx-auto h-full flex flex-col justify-end px-6 md:px-12 pb-16 pt-[200px]">
-            <div className="mb-6">
-              <Link href="/discover" className="inline-flex items-center gap-2 font-sans text-xs uppercase tracking-widest text-white/70 hover:text-white transition-colors">
-                <IconArrowLeft className="w-4 h-4" />
-                <span>Explore More Trips</span>
-              </Link>
-            </div>
-
-            <div className="flex flex-col gap-4 max-w-3xl">
-              {/* Tags */}
-              <div className="flex gap-4 mb-2">
-                <span className="px-5 py-2 rounded-full border border-white text-white font-sans text-[12px] uppercase tracking-widest">Japan</span>
-                <span className="px-5 py-2 rounded-full border border-white text-white font-sans text-[12px] uppercase tracking-widest">14 Days</span>
-              </div>
-              {/* Heading (Serif) */}
-              <EditorialHeading className="text-[53px] md:text-[80px] leading-none font-thin text-white tracking-tight">The Imperial Kyoto & Honshu Retreat</EditorialHeading>
-              {/* Subheading */}
-              <p className="font-sans text-[23px] leading-[1.4] text-[#e2e2e2] mt-4 max-w-2xl">
-                A meticulously curated journey through ancient capitals, minimalist modern architecture, and serene landscapes.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Itinerary Details Section (Light Canvas - Linen Cream) */}
-        <section className="w-full max-w-[1200px] mx-auto px-6 md:px-12 py-32">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
-            
-            {/* Left Column: Timeline */}
-            <div className="md:col-span-8 flex flex-col gap-16">
+        {isLoading ? (
+          <section className="relative w-full h-[870px] bg-[#0e0e0e] text-white flex items-center justify-center font-sans uppercase tracking-widest text-sm text-white/50">
+            Loading Itinerary...
+          </section>
+        ) : data ? (
+          <>
+            <section className="relative w-full h-[870px] bg-[#0e0e0e] text-white overflow-hidden">
+              {/* Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center w-full h-full" 
+                style={{ backgroundImage: `url('${data.trip.cover_image_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuB-XusGtLDp62pNDiNNKIfj47j_juooJIdvYb4DHVlOn0IIR9ZCh3jPnD3raL1PtOlhjWHf5sqvFpC3C9iy7fjaAHqiR1LzSoaBEhgAHZFUksHoOPEApjBLdJ9sKmj4pdTHWizDaI--wHto8TrXm8MYf6wCvgTD_pfADcxfacqW62eK6HAYBP3Gu_V76Z3dDqF-Zx4R4OOF3Ti08WOkp8QyiFTTwfvdWxSJNd2uDouyuPfc2F6IFPZp"}')` }}
+              ></div>
+              {/* Gradient Overlay for legibility */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0e0e0e]/70"></div>
               
-              {/* Day 1 Card */}
-              <div className="bg-[#efefe7] p-10 border border-[#0e0e0e] flex flex-col gap-6 relative">
-                <div className="flex justify-between items-start border-b border-[#0e0e0e] pb-4">
-                  <div>
-                    <h3 className="font-sans text-[39px] leading-[1.2] text-[#0e0e0e]">Day 1: Arrival in Tokyo</h3>
-                    <p className="font-sans text-[16px] text-[#0e0e0e]/70 mt-1">October 12th, 2026</p>
-                  </div>
-                  <span className="font-sans text-[20px] border border-[#0e0e0e] px-4 py-1 rounded-full text-[#0e0e0e]">Explore</span>
+              {/* Hero Content */}
+              <div className="relative z-10 w-full max-w-[1200px] mx-auto h-full flex flex-col justify-end px-6 md:px-12 pb-16 pt-[200px]">
+                <div className="mb-6">
+                  <Link href="/discover" className="inline-flex items-center gap-2 font-sans text-xs uppercase tracking-widest text-white/70 hover:text-white transition-colors">
+                    <IconArrowLeft className="w-4 h-4" />
+                    <span>Explore More Trips</span>
+                  </Link>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-4">
-                  <div className="flex flex-col gap-4">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      alt="Hotel room" 
-                      className="w-full h-64 object-cover border border-[#0e0e0e]" 
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDX8GoF3rdnrnVGYNn5rGoQQj2tfOCIWoCGQLbWwwu0U1K1R3ZBKmSXiwe7wuU_p4MURdYNSNXvY1t-CjXf85Dbg_8TFr6Pl0az53ypI9Y3_gpXFWVXEL-qU0fzoxMzqexikpLSlkkrvz2Jjn0JRFy_z4wLQaem7Xv22xHlGu4AByHElNoU5Gz7eT7BoGYorQASdoWOH2R6ZdJhHFg136Gl2BSyB0w3Y0mJfVTOKj6lcDm5rY3JZJ24"
-                    />
-                    <p className="font-sans text-[16px] leading-[1.5] text-[#0e0e0e]">
-                      Check-in at Aman Tokyo. Evening orientation and private dining experience focusing on seasonal kaiseki.
-                    </p>
+
+                <div className="flex flex-col gap-4 max-w-3xl">
+                  {/* Tags */}
+                  <div className="flex gap-4 mb-2">
+                    <span className="px-5 py-2 rounded-full border border-white text-white font-sans text-[12px] uppercase tracking-widest">
+                      {data.stops.length > 0 ? data.stops[0].cities?.country : "Global"}
+                    </span>
+                    <span className="px-5 py-2 rounded-full border border-white text-white font-sans text-[12px] uppercase tracking-widest">
+                      {data.stops.length} Stops
+                    </span>
                   </div>
-                  <div className="flex flex-col gap-4 justify-between">
-                    <ul className="flex flex-col gap-4 font-sans text-[16px] text-[#0e0e0e]">
-                      <li className="flex items-center gap-4">
-                        <IconPlaneArrival className="w-5 h-5 text-[#0e0e0e]" />
-                        Private transfer from Haneda
-                      </li>
-                      <li className="flex items-center gap-4">
-                        <IconBed className="w-5 h-5 text-[#0e0e0e]" />
-                        Aman Tokyo (Suite)
-                      </li>
-                      <li className="flex items-center gap-4">
-                        <IconToolsKitchen2 className="w-5 h-5 text-[#0e0e0e]" />
-                        Dinner at Ryugin
-                      </li>
-                    </ul>
-                    <div className="mt-auto pt-6 border-t border-[#0e0e0e] flex justify-between items-center font-sans text-[20px] text-[#0e0e0e]">
-                      <span>Daily Estimate</span>
-                      <span>$3,200</span>
-                    </div>
-                  </div>
+                  {/* Heading (Serif) */}
+                  <EditorialHeading className="text-[53px] md:text-[80px] leading-none font-thin text-white tracking-tight">
+                    {data.trip.title}
+                  </EditorialHeading>
+                  {/* Subheading */}
+                  <p className="font-sans text-[23px] leading-[1.4] text-[#e2e2e2] mt-4 max-w-2xl">
+                    {data.trip.description || "A meticulously curated journey through stunning destinations."}
+                  </p>
                 </div>
               </div>
+            </section>
 
-              {/* Day 2 Card */}
-              <div className="bg-[#efefe7] p-10 border border-[#0e0e0e] flex flex-col gap-6 relative">
-                <div className="flex justify-between items-start border-b border-[#0e0e0e] pb-4">
-                  <div>
-                    <h3 className="font-sans text-[39px] leading-[1.2] text-[#0e0e0e]">Day 2: The Art Island</h3>
-                    <p className="font-sans text-[16px] text-[#0e0e0e]/70 mt-1">October 13th, 2026</p>
-                  </div>
-                  <span className="font-sans text-[20px] border border-[#0e0e0e] px-4 py-1 rounded-full text-[#0e0e0e]">Culture</span>
-                </div>
+            {/* Itinerary Details Section (Light Canvas - Linen Cream) */}
+            <section className="w-full max-w-[1200px] mx-auto px-6 md:px-12 py-32">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-4">
-                  <div className="flex flex-col gap-4">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      alt="Museum" 
-                      className="w-full h-64 object-cover border border-[#0e0e0e]" 
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV7-7py2vwga16hloXsSEu2ij-XGYshuZKSmoLBicoallOr7fINIEkIiw4t1gjvWIqHT711NdldTg3QZTYppzXcNmOU5C4RKahND1yaMA8p4yMbZBC0LRpO7JFN-OcKZlWsBDWSMwIJ6F9WwP7erwJ-wuKZol4fKT1eHx6Eu-o_m2cKZz5E8HRNPDlfUwVRBsdMhR_gUh0uRMK8DhmVqaRFrky-oEqGD3Yb3Sx5jslQusDjqWPLZ1N"
-                    />
-                    <p className="font-sans text-[16px] leading-[1.5] text-[#0e0e0e]">
-                      Shinkansen to Naoshima. Private guided tour of Chichu Art Museum and Benesse House installations.
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-4 justify-between">
-                    <ul className="flex flex-col gap-4 font-sans text-[16px] text-[#0e0e0e]">
-                      <li className="flex items-center gap-4">
-                        <IconTrain className="w-5 h-5 text-[#0e0e0e]" />
-                        First Class Shinkansen
-                      </li>
-                      <li className="flex items-center gap-4">
-                        <IconBuildingMonument className="w-5 h-5 text-[#0e0e0e]" />
-                        Chichu Art Museum VIP Access
-                      </li>
-                      <li className="flex items-center gap-4">
-                        <IconBed className="w-5 h-5 text-[#0e0e0e]" />
-                        Benesse House Oval
-                      </li>
-                    </ul>
-                    <div className="mt-auto pt-6 border-t border-[#0e0e0e] flex justify-between items-center font-sans text-[20px] text-[#0e0e0e]">
-                      <span>Daily Estimate</span>
-                      <span>$1,850</span>
+                {/* Left Column: Timeline */}
+                <div className="md:col-span-8 flex flex-col gap-16">
+                  
+                  {data.stops.map((stop: any, stopIndex: number) => (
+                    <div key={stop.id} className="bg-[#efefe7] p-10 border border-[#0e0e0e] flex flex-col gap-6 relative">
+                      <div className="flex justify-between items-start border-b border-[#0e0e0e] pb-4">
+                        <div>
+                          <h3 className="font-sans text-[39px] leading-[1.2] text-[#0e0e0e]">
+                            Stop {stopIndex + 1}: {stop.cities?.name}
+                          </h3>
+                          <p className="font-sans text-[16px] text-[#0e0e0e]/70 mt-1">
+                            {stop.arrival_date ? new Date(stop.arrival_date).toLocaleDateString() : "Date TBD"}
+                          </p>
+                        </div>
+                        <span className="font-sans text-[20px] border border-[#0e0e0e] px-4 py-1 rounded-full text-[#0e0e0e]">
+                          {stop.cities?.country || "Destination"}
+                        </span>
+                      </div>
+                      
+                      {stop.activities.length === 0 ? (
+                        <div className="py-8 text-center text-[#0e0e0e]/50 font-sans italic">
+                          No specific activities planned for this stop yet.
+                        </div>
+                      ) : (
+                        stop.activities.map((act: any, actIndex: number) => (
+                          <div key={act.id} className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-4 pb-10 border-b border-[#0e0e0e]/20 last:border-0 last:pb-0">
+                            <div className="flex flex-col gap-4">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img 
+                                alt={act.custom_title || act.activities?.name} 
+                                className="w-full h-64 object-cover border border-[#0e0e0e]" 
+                                src={act.activities?.image_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuDX8GoF3rdnrnVGYNn5rGoQQj2tfOCIWoCGQLbWwwu0U1K1R3ZBKmSXiwe7wuU_p4MURdYNSNXvY1t-CjXf85Dbg_8TFr6Pl0az53ypI9Y3_gpXFWVXEL-qU0fzoxMzqexikpLSlkkrvz2Jjn0JRFy_z4wLQaem7Xv22xHlGu4AByHElNoU5Gz7eT7BoGYorQASdoWOH2R6ZdJhHFg136Gl2BSyB0w3Y0mJfVTOKj6lcDm5rY3JZJ24"}
+                              />
+                              <p className="font-sans text-[16px] leading-[1.5] text-[#0e0e0e]">
+                                {act.custom_description || act.activities?.description || "Experience the best of what this destination has to offer."}
+                              </p>
+                            </div>
+                            <div className="flex flex-col gap-4 justify-between">
+                              <ul className="flex flex-col gap-4 font-sans text-[16px] text-[#0e0e0e]">
+                                <li className="flex items-center gap-4">
+                                  <IconBuildingMonument className="w-5 h-5 text-[#0e0e0e]" />
+                                  <span className="font-bold">{act.custom_title || act.activities?.name || "Activity"}</span>
+                                </li>
+                                <li className="flex items-center gap-4">
+                                  <IconToolsKitchen2 className="w-5 h-5 text-[#0e0e0e]" />
+                                  {act.activities?.category || "General"}
+                                </li>
+                              </ul>
+                              <div className="mt-auto pt-6 border-t border-[#0e0e0e] flex justify-between items-center font-sans text-[20px] text-[#0e0e0e]">
+                                <span>Est. Cost</span>
+                                <span>${act.estimated_cost || "---"}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
 
-            </div>
-
-            {/* Right Column: Summary & Actions */}
-            <div className="md:col-span-4 flex flex-col gap-16">
-              
-              {/* Trip Summary Card */}
-              <div className="bg-[#0e0e0e] text-white p-10 flex flex-col gap-6 sticky top-32">
-                <EditorialHeading as="h4" className="text-[39px] text-white mb-4">Itinerary Brief</EditorialHeading>
-                
-                <div className="flex flex-col gap-4 font-sans text-[16px] border-b border-white/20 pb-6">
-                  <div className="flex justify-between">
-                    <span className="text-[#e2e2e2]">Travelers</span>
-                    <span>2 Adults</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#e2e2e2]">Duration</span>
-                    <span>14 Days</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#e2e2e2]">Est. Total</span>
-                    <span>$24,500</span>
-                  </div>
-                </div>
-                
-                <p className="font-sans text-[16px] text-[#e2e2e2] italic">
-                  Curated by Sarah Jenkins, Lead Concierge.
-                </p>
+                {/* Right Column: Summary & Actions */}
+                <div className="md:col-span-4 flex flex-col gap-16">
+                  
+                  {/* Trip Summary Card */}
+                  <div className="bg-[#0e0e0e] text-white p-10 flex flex-col gap-6 sticky top-32">
+                    <EditorialHeading as="h4" className="text-[39px] text-white mb-4">Itinerary Brief</EditorialHeading>
+                    
+                    <div className="flex flex-col gap-4 font-sans text-[16px] border-b border-white/20 pb-6">
+                      <div className="flex justify-between">
+                        <span className="text-[#e2e2e2]">Status</span>
+                        <span className="uppercase">{data.trip.status}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#e2e2e2]">Start Date</span>
+                        <span>{data.trip.start_date ? new Date(data.trip.start_date).toLocaleDateString() : "TBD"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#e2e2e2]">Est. Total</span>
+                        <span>${data.trip.budget?.toLocaleString() || "0"}</span>
+                      </div>
+                    </div>
+                    
+                    <p className="font-sans text-[16px] text-[#e2e2e2] italic">
+                      Curated by GlobeTrotter AI Concierge.
+                    </p>
                 
                 {/* Primary CTA */}
                 <button 
@@ -249,7 +232,7 @@ export default function PublicItineraryView() {
                 </button>
 
                 <Link 
-                  href="/analytics" 
+                  href={`/build/${data.trip.id}/analytics`} 
                   className="border border-white/30 text-white rounded-[10.08px] px-10 py-3 font-sans text-sm text-center hover:bg-white hover:text-black transition-colors"
                 >
                   View Cost Breakdown
@@ -272,11 +255,16 @@ export default function PublicItineraryView() {
                     <IconLink className="w-5 h-5" stroke={1.5} />
                   </button>
                 </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            
-          </div>
-        </section>
+            </section>
+          </>
+        ) : (
+          <section className="relative w-full h-screen bg-[#0e0e0e] text-white flex items-center justify-center font-sans uppercase tracking-widest text-sm text-[#93000a]">
+            Failed to load itinerary
+          </section>
+        )}
       </main>
 
       <Footer onContactClick={() => setIsContactModalOpen(true)} />

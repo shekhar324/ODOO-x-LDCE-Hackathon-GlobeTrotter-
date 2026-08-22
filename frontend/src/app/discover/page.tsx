@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useCities } from "@/hooks/use-discover";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Full name required"),
@@ -24,6 +25,8 @@ type ContactForm = z.infer<typeof contactSchema>;
 
 export default function DiscoverPage() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { data: cities, isLoading } = useCities(searchQuery);
 
   const contactForm = useForm<ContactForm>({
     resolver: zodResolver(contactSchema),
@@ -37,49 +40,6 @@ export default function DiscoverPage() {
     contactForm.reset();
     setIsContactModalOpen(false);
   };
-
-  const destinations = [
-    {
-      id: "1",
-      title: "Amalfi Coast",
-      location: "Italy, Europe",
-      description: "Experience the dramatic coastline, pristine waters, and vibrant culture of southern Italy's most exclusive retreat.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCQxJzRKGuEnHRXK1O2BqVzZfal-5Vf2neRjGcfbHfphvZigbn7ar8SdbWRyBzn90MExYW5OpOr_d9t8amzvTS6WbPB9kqvvfdZa4ck92bxTUvyFia8hJcfriuLijnhuJ8t6Ok5oopNJGGPx4QkstJ-qPYF7b7BT2sU3T8XIpnidjrx0QIjIg07qnZrh-Xtc9vE1Ah7A6KbufpymueJe1R5zLbqlKV2HKByhnfnozg75zlVVUHBN60d",
-      tags: ["Coastal", "Luxury"],
-      costIndex: "High",
-      popularity: "98%"
-    },
-    {
-      id: "2",
-      title: "Kyoto",
-      location: "Japan, Asia",
-      description: "Immerse yourself in ancient traditions, serene temples, and unparalleled hospitality in the cultural heart of Japan.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAit6InvkWyfKUZ4y8iBW9Ah-mIDqP0h-rc3TwIa3nPfqRa11UnH4D82Gv27DydiIKCH-KBIJ-MlQLnEnPSiShYJJ3yrNAJpXIwl0p8prfFriG-4g5ZYjIQbbwGXwixXlwcm9nN5MwHos6F-45zQpNAlEcO-nt2ONoN9T7r3JNjFjROybpP6oZencqOhegqYKSH6Yi9jrgcvDTSqaEHHx0nPRHqQUgqoMpt5VaJz5b6JBzSKg99u-ua",
-      tags: ["Cultural", "Wellness"],
-      costIndex: "Med-High",
-      popularity: "92%"
-    },
-    {
-      id: "3",
-      title: "Santorini",
-      location: "Greece, Europe",
-      description: "Breathtaking sunsets, iconic architecture, and cliffside luxury living on the edge of the Aegean Sea.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD5Rctl66r3OgNfS_hczV4H_RVJP_t3bGe_eFaS9EGORHWBCISLXVeoigXwRfeDwe1em1wBWORZRdQBzwCOmCbqwB_1chXoDpAdJ7D-feYEisFDCI5kvq3gzOXF4rpcKrZo8ua5t1OO8fINmh9WsaH_QQeUXEoclCy0z14qu1SJY9KdyOH4CaMifPbgC_c8tRK9Kf9w3AXuPQvFv2pnNtZ1gyVZnI8PuizGtL_agdwVRe_idwT2fp2z",
-      tags: ["Island", "Romantic"],
-      costIndex: "Very High",
-      popularity: "99%"
-    },
-    {
-      id: "4",
-      title: "Serengeti",
-      location: "Tanzania, Africa",
-      description: "Unparalleled wildlife encounters and boundless luxury amidst the raw beauty of the African savanna.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuB2xnPO2K2yL7XRDOe2uf6gerP2XUchjNDwv7oqHt8Clvocwr8fw1sji6r_F_ed7ScjcTMNO4MvVJWL6TogOnmVfh2eXxhV3U3u54gTT85WU64iLlGwTcArpbC_PQd7O-tnm-EgHXC4vx5sV3OcmLeR4WbkFLbd2F7mclR4oSxIsE3noMFg-ONbra7_uT96YHISI756_7gJGtmm4dAZaEfOx_aw79C85XxjafLSBYIijJXYkKtmSsPU",
-      tags: ["Adventure", "Wildlife"],
-      costIndex: "High",
-      popularity: "85%"
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-[#e4e9dc] text-[#020202] flex flex-col font-sans selection:bg-[#c3eeb4] selection:text-[#002200]">
@@ -104,6 +64,8 @@ export default function DiscoverPage() {
                   className="w-full bg-[#efefe7] border border-[#020202] rounded-full py-3 pl-12 pr-4 text-[#020202] focus:outline-none focus:ring-1 focus:ring-[#38a454] font-sans text-sm placeholder:text-[#020202]/40 transition-colors" 
                   placeholder="Search cities, activities..." 
                   type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <div className="flex gap-2 w-full sm:w-auto overflow-x-auto hide-scrollbar">
@@ -122,9 +84,33 @@ export default function DiscoverPage() {
 
           {/* Results Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {destinations.map(dest => (
-              <DestinationCard key={dest.id} {...dest} />
-            ))}
+            {isLoading ? (
+              <div className="col-span-1 md:col-span-2 py-12 flex justify-center text-[#020202]/50 font-sans tracking-widest text-sm uppercase">
+                Searching Destinations...
+              </div>
+            ) : cities && cities.length > 0 ? (
+              cities.map(city => {
+                const costMap = ["Budget", "Affordable", "Moderate", "High", "Ultra Luxury"];
+                const mappedCost = city.cost_index ? costMap[city.cost_index - 1] : "Moderate";
+                return (
+                  <DestinationCard 
+                    key={city.id} 
+                    id={city.id.toString()}
+                    title={city.name}
+                    location={city.country}
+                    description={city.description || "Discover an exceptional travel destination."}
+                    image={city.image_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuCQxJzRKGuEnHRXK1O2BqVzZfal-5Vf2neRjGcfbHfphvZigbn7ar8SdbWRyBzn90MExYW5OpOr_d9t8amzvTS6WbPB9kqvvfdZa4ck92bxTUvyFia8hJcfriuLijnhuJ8t6Ok5oopNJGGPx4QkstJ-qPYF7b7BT2sU3T8XIpnidjrx0QIjIg07qnZrh-Xtc9vE1Ah7A6KbufpymueJe1R5zLbqlKV2HKByhnfnozg75zlVVUHBN60d"}
+                    tags={["Destination", mappedCost]}
+                    costIndex={mappedCost}
+                    popularity={city.popularity_score ? `${city.popularity_score}%` : "90%"}
+                  />
+                );
+              })
+            ) : (
+              <div className="col-span-1 md:col-span-2 py-12 flex justify-center text-[#020202]/50 font-sans">
+                No destinations found for your search.
+              </div>
+            )}
           </div>
 
           {/* Pagination */}

@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useAuth } from "@/context/auth-context";
+import { useTrips } from "@/hooks/use-trips";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Full name required"),
@@ -25,6 +27,8 @@ type ContactForm = z.infer<typeof contactSchema>;
 
 export default function ProfilePage() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const { user, profile } = useAuth();
+  const { data: trips } = useTrips();
 
   const contactForm = useForm<ContactForm>({
     resolver: zodResolver(contactSchema),
@@ -50,32 +54,42 @@ export default function ProfilePage() {
         {/* Profile Header Section */}
         <section className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
           <div className="col-span-1 md:col-span-4 flex justify-center md:justify-start">
-            <div className="w-48 h-48 rounded-full border border-[#020202] overflow-hidden p-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                className="w-full h-full object-cover rounded-full" 
-                alt="Eleanor Vance" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQXweEahHINIjm8wTk4JDPQ0oFqvkq_ylbrP9KZOVM3ErdkvsYfN-O3nhE6xnTr7U5DL98bVwQkNAVMsikB8LxTE735JTAOKStWBVQypt02_sCz75D4HF-eoeBgS_GiHgjyz8TCHr9LOXQUHfjXp014OEWPOMMyq0wmv0OK7cN6mSlrcAZgS7-9y6G5yQsrAwRH9jxotAX3H66zQfY-5KG2ZQQr3WHmspM4vVx1k2t9HLYX-qV_7oH" 
-              />
+            <div className="w-48 h-48 rounded-full border border-[#020202] overflow-hidden p-1 flex items-center justify-center bg-[#020202] text-white">
+              {profile?.avatar_url ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img 
+                  className="w-full h-full object-cover rounded-full" 
+                  alt={profile?.full_name || "User"} 
+                  src={profile.avatar_url} 
+                />
+              ) : (
+                <span className="font-serif text-6xl">
+                  {profile?.first_name?.[0] || profile?.full_name?.[0] || "T"}
+                </span>
+              )}
             </div>
           </div>
           <div className="col-span-1 md:col-span-8 flex flex-col gap-4">
-            <EditorialHeading className="text-[53px] leading-[1.1] text-[#020202]">Eleanor Vance</EditorialHeading>
+            <EditorialHeading className="text-[53px] leading-[1.1] text-[#020202]">
+              {profile?.full_name || `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "Traveler"}
+            </EditorialHeading>
             <div className="flex flex-col gap-2 mt-6">
               <div className="flex items-center gap-4">
                 <span className="font-sans text-[14px] text-[#3e4a3e] w-32 uppercase tracking-widest">Email</span>
-                <span className="font-sans text-[23px] text-[#020202]">eleanor.vance@example.com</span>
+                <span className="font-sans text-[23px] text-[#020202]">{user?.email || "N/A"}</span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-sans text-[14px] text-[#3e4a3e] w-32 uppercase tracking-widest">Status</span>
                 <span className="font-sans text-[23px] text-[#020202] flex items-center gap-2">
                   <IconStarFilled className="w-5 h-5 text-[#38a454]" />
-                  Elite Voyager
+                  Verified Voyager
                 </span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-sans text-[14px] text-[#3e4a3e] w-32 uppercase tracking-widest">Member Since</span>
-                <span className="font-sans text-[23px] text-[#020202]">October 2021</span>
+                <span className="font-sans text-[23px] text-[#020202]">
+                  {user?.created_at ? new Date(user.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : "Recently"}
+                </span>
               </div>
             </div>
             <div className="flex flex-wrap gap-4 mt-10">
@@ -104,37 +118,31 @@ export default function ProfilePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Itinerary Card 1 */}
-            <Link 
-              href="/itinerary/kyoto-autumn-retreat"
-              className="bg-[#efefe7] border border-[#020202] p-10 flex flex-col justify-between min-h-[300px] group cursor-pointer hover:bg-[#393939] hover:text-white transition-colors rounded-[15.04px]"
-            >
-              <div>
-                <span className="font-sans text-[12px] uppercase tracking-widest border border-current rounded-full px-4 py-1 mb-6 inline-block">Upcoming</span>
-                <EditorialHeading as="h3" className="text-[39px] mt-4 mb-2 group-hover:text-white transition-colors">Kyoto Autumn</EditorialHeading>
-                <p className="font-sans text-[16px] opacity-80">Nov 12 - Nov 24, 2026</p>
-              </div>
-              <div className="flex justify-between items-center mt-16">
-                <span className="font-sans text-[16px]">4 Guests</span>
-                <IconArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-              </div>
-            </Link>
-            
-            {/* Itinerary Card 2 */}
-            <Link 
-              href="/build"
-              className="bg-[#020202] text-white p-10 flex flex-col justify-between min-h-[300px] group cursor-pointer rounded-[15.04px]"
-            >
-              <div>
-                <span className="font-sans text-[12px] uppercase tracking-widest border border-[#889486] text-[#8efa9e] rounded-full px-4 py-1 mb-6 inline-block">Planning</span>
-                <EditorialHeading as="h3" className="text-[39px] mt-4 mb-2 text-white">Amalfi Coast</EditorialHeading>
-                <p className="font-sans text-[16px] text-[#becabb]">May 05 - May 15, 2026</p>
-              </div>
-              <div className="flex justify-between items-center mt-16">
-                <span className="font-sans text-[16px] text-[#becabb]">2 Guests</span>
-                <IconArrowRight className="w-6 h-6 text-[#8efa9e] group-hover:translate-x-2 transition-transform" />
-              </div>
-            </Link>
+            {trips?.filter(t => t.status !== "completed").slice(0, 2).map((trip) => (
+              <Link 
+                key={trip.id}
+                href={`/build/${trip.id}`}
+                className="bg-[#efefe7] border border-[#020202] p-10 flex flex-col justify-between min-h-[300px] group cursor-pointer hover:bg-[#393939] hover:text-white transition-colors rounded-[15.04px]"
+              >
+                <div>
+                  <span className={`font-sans text-[12px] uppercase tracking-widest border rounded-full px-4 py-1 mb-6 inline-block ${
+                    trip.status === "draft" ? "border-[#889486] text-[#889486] group-hover:border-white group-hover:text-white" : "border-current"
+                  }`}>
+                    {trip.status}
+                  </span>
+                  <EditorialHeading as="h3" className="text-[39px] mt-4 mb-2 group-hover:text-white transition-colors">
+                    {trip.title}
+                  </EditorialHeading>
+                  <p className="font-sans text-[16px] opacity-80">
+                    {trip.start_date ? new Date(trip.start_date).toLocaleDateString() : "Dates TBD"}
+                  </p>
+                </div>
+                <div className="flex justify-between items-center mt-16">
+                  <span className="font-sans text-[16px]">Manage</span>
+                  <IconArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                </div>
+              </Link>
+            ))}
             
             {/* Action Card */}
             <Link 
@@ -164,62 +172,31 @@ export default function ProfilePage() {
           
           <div className="flex overflow-x-auto gap-6 pb-6 pt-4 no-scrollbar snap-x max-w-[1200px] mx-auto w-full">
             
-            {/* Archive Card 1 */}
-            <Link href="/itinerary/paris-noir" className="snap-start shrink-0 w-[300px] group cursor-pointer">
-              <div className="h-[400px] w-full bg-[#353535] relative overflow-hidden rounded-[15.04px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                  alt="Paris Noir" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVqJ3r7VIvlzIN4OBziatklLqrnvibX00_1UlaE0k1rIt6ADC3C9jQz6yzdQkjTF_rMwd1VXSwsyjJbFC09ERrCyD4hNemZzc8BGm8FetETNXph49_A4RsnlAUIHRYBLAx6BIuj9cGJhToxKx0T8-CbYpyTJTvSzApkkUTcpyI1HvRmR0250vKipSYidJ8EP9mGaNtMlBegrsNJLdbXq1PKnrB32ReOxnSeT5aLMjsXXt6H5CDFccl" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#020202] to-transparent opacity-80"></div>
-                <div className="absolute bottom-0 left-0 p-6">
-                  <span className="font-sans text-[12px] uppercase tracking-widest text-[#becabb] mb-2 block">Spring 2025</span>
-                  <h3 className="font-sans text-[39px] leading-[1.2] text-white">Paris Noir</h3>
+            {trips?.filter(t => t.status === "completed").map((trip) => (
+              <Link key={trip.id} href={`/itinerary/${trip.id}`} className="snap-start shrink-0 w-[300px] group cursor-pointer">
+                <div className="h-[400px] w-full bg-[#353535] relative overflow-hidden rounded-[15.04px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                    alt={trip.title} 
+                    src={trip.cover_image_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuAVqJ3r7VIvlzIN4OBziatklLqrnvibX00_1UlaE0k1rIt6ADC3C9jQz6yzdQkjTF_rMwd1VXSwsyjJbFC09ERrCyD4hNemZzc8BGm8FetETNXph49_A4RsnlAUIHRYBLAx6BIuj9cGJhToxKx0T8-CbYpyTJTvSzApkkUTcpyI1HvRmR0250vKipSYidJ8EP9mGaNtMlBegrsNJLdbXq1PKnrB32ReOxnSeT5aLMjsXXt6H5CDFccl"} 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#020202] to-transparent opacity-80"></div>
+                  <div className="absolute bottom-0 left-0 p-6">
+                    <span className="font-sans text-[12px] uppercase tracking-widest text-[#becabb] mb-2 block">
+                      {trip.start_date ? new Date(trip.start_date).getFullYear() : "Past Trip"}
+                    </span>
+                    <h3 className="font-sans text-[39px] leading-[1.2] text-white">{trip.title}</h3>
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            ))}
             
-            {/* Archive Card 2 */}
-            <Link href="/itinerary/swiss-alps" className="snap-start shrink-0 w-[300px] group cursor-pointer">
-              <div className="h-[400px] w-full bg-[#353535] relative overflow-hidden rounded-[15.04px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                  alt="Swiss Alps" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGKL-btYDT9fzhpMzUkaGcwlSzwc3iD14zZpJhvpAAiDgJWo-GuNcfM-eZnrQ-BPB8vz2l3T775FTf3B2rEhp3ja88LWAzeB3qbb4ufQtBx5ECD9eHqte79OTowI4mG3d4Af9iF5WnPrcfQl8lgHPj2eoRnWl_XyLiZMrghqE5DRCdN0om57XPt0S5NYD7Aq142sJGeECarNh3v0olphnL0dzYBxCkESm31Mex2ntMpU5qS4m1AEpu" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#020202] to-transparent opacity-80"></div>
-                <div className="absolute bottom-0 left-0 p-6">
-                  <span className="font-sans text-[12px] uppercase tracking-widest text-[#becabb] mb-2 block">Winter 2024</span>
-                  <h3 className="font-sans text-[39px] leading-[1.2] text-white">Swiss Alps</h3>
-                </div>
-              </div>
-            </Link>
-            
-            {/* Archive Card 3 */}
-            <Link href="/itinerary/marrakesh" className="snap-start shrink-0 w-[300px] group cursor-pointer">
-              <div className="h-[400px] w-full bg-[#353535] relative overflow-hidden rounded-[15.04px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                  alt="Marrakesh" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDexnfXjW7rrgFiF4v5Zg11MG1mfl3Ctbxd10OFWo_rduM4yZxj_d5vAXL7C_JEkojfXqmwHFRqAJ_Hr3QGw7NepCS4jzovSQYmpBaLMNuUF9PWzDWyezze38u6KbCoZAegTSylh5pP8zoiAWdkOXfWHEmiGNfrbDzsXuEbNXJJeucC-A6hnXVomQfVGZBC3Vu6mvZ-xynuFUkCxAo9gyoyz2LnMOlD-bqz9PnOA4Q5Do_2ek_0bY3B" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#020202] to-transparent opacity-80"></div>
-                <div className="absolute bottom-0 left-0 p-6">
-                  <span className="font-sans text-[12px] uppercase tracking-widest text-[#becabb] mb-2 block">Autumn 2024</span>
-                  <h3 className="font-sans text-[39px] leading-[1.2] text-white">Marrakesh</h3>
-                </div>
-              </div>
-            </Link>
-            
-            {/* Archive Card 4 */}
-            <Link href="/discover" className="snap-start shrink-0 w-[300px] group cursor-pointer">
+            {/* Archive Card CTA */}
+            <Link href="/dashboard" className="snap-start shrink-0 w-[300px] group cursor-pointer">
               <div className="h-[400px] w-full bg-[#353535] relative overflow-hidden flex items-center justify-center border border-[#353535] rounded-[15.04px]">
                 <span className="font-sans text-[20px] text-[#becabb] flex items-center gap-2 hover:text-white transition-colors">
-                  View Archive <IconArrowRight className="w-5 h-5" />
+                  View All Activity <IconArrowRight className="w-5 h-5" />
                 </span>
               </div>
             </Link>

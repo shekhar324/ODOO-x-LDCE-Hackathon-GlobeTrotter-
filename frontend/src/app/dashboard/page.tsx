@@ -8,6 +8,8 @@ import { EditorialHeading } from "@/components/editorial/editorial-heading";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { BoardingPassCard } from "@/components/editorial/boarding-pass-card";
 import { IconPlus, IconArrowRight, IconChartBar } from "@tabler/icons-react";
+import { useAuth } from "@/context/auth-context";
+import { useTrips } from "@/hooks/use-trips";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +34,8 @@ type ContactForm = z.infer<typeof contactSchema>;
 
 export default function DashboardPage() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const { profile } = useAuth();
+  const { data: trips, isLoading: tripsLoading } = useTrips();
 
   const contactForm = useForm<ContactForm>({
     resolver: zodResolver(contactSchema),
@@ -46,34 +50,10 @@ export default function DashboardPage() {
     setIsContactModalOpen(false);
   };
 
-  const boardingPasses = [
-    {
-      id: "1",
-      flight: "AZ-482",
-      destination: "Amalfi Coast",
-      date: "OCT 12",
-      passenger: "ALEXANDER W.",
-      fromCode: "JFK",
-      toCode: "NAP",
-      gate: "B12",
-      seat: "4A",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCd7xK0uE-xLZhJWei4l7EOhJfnBX9LmC97HJO_xmZog8GRUArXTJSlXIuQCJSVasHkxlUIBiyEyuhz59VC_g084l5Wd7xBX9oCS66g6eeJUBGbfdyyREy44noJj2yzFk58X5VA_hPwLXtUMq_hK194wDtwjngRWY6t5e_1zuigFhruBtki5G2vpLIuyERbU3I4fvUY9agKmfpWhl4R3ulfFyoAniL9_ZhHLVUQWKPIA51C0gwdfEFO",
-      href: "/itinerary/amalfi-coast-retreat"
-    },
-    {
-      id: "2",
-      flight: "JL-005",
-      destination: "Kyoto",
-      date: "NOV 04",
-      passenger: "ALEXANDER W.",
-      fromCode: "SFO",
-      toCode: "KIX",
-      gate: "G9",
-      seat: "12K",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBNWErJ3pfr-TIBC1F9rxRCfLEku_vFzJWhgQHZwvc0i3dhSjE-ejedRsp-osZ0CAC11F02Zs_N_qpCNxaTDk31d1C_vhbUka2jZ4dw-Dif3ALZ4NJynNe46QQ5voGb7cUhgiwMBaxDuP2AcBZbRFPfJyHwzeTh_j7K82mbC7DY26g_SCSbMpBxgUWLjqZx6URUd_gG5THMMXhtMWDtM6kwWAGp_pJChpPY8CV5TISFUviAGPNsx0MF",
-      href: "/itinerary/kyoto-autumn-retreat"
-    }
-  ];
+  const userName = profile?.first_name || profile?.full_name?.split(" ")[0] || "Traveler";
+
+  // Filter trips into ongoing/upcoming (you could add logic based on dates)
+  const activeTrips = trips?.filter(t => t.status !== "cancelled" && t.status !== "completed") || [];
 
   return (
     <AuthGuard>
@@ -92,7 +72,7 @@ export default function DashboardPage() {
           </div>
           <div className="relative z-10 max-w-[1200px] mx-auto w-full flex flex-col items-start pt-32">
             <h1 className="font-serif text-[80px] md:text-[180px] leading-none text-white mb-6 font-thin tracking-tighter mix-blend-overlay opacity-90">
-              Welcome, Alexander
+              Welcome, {userName}
             </h1>
             <div className="flex flex-wrap items-center gap-4 mt-8">
               <Link 
@@ -104,7 +84,7 @@ export default function DashboardPage() {
               </Link>
 
               <Link 
-                href="/analytics" 
+                href="/profile" 
                 className="bg-transparent border border-white/60 text-white px-8 py-3.5 rounded-[10px] font-sans text-sm flex items-center gap-2 hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer backdrop-blur-sm"
               >
                 <IconChartBar className="w-4 h-4" />
@@ -127,9 +107,33 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="flex gap-8 overflow-x-auto hide-scrollbar snap-x snap-mandatory pr-6 md:pr-12 pb-8">
-            {boardingPasses.map((pass) => (
-              <BoardingPassCard key={pass.id} {...pass} />
-            ))}
+            {tripsLoading ? (
+              <div className="text-white/50 text-sm font-sans tracking-widest uppercase">Loading Itineraries...</div>
+            ) : activeTrips.length === 0 ? (
+              <div className="text-white/50 text-sm font-sans flex flex-col gap-4">
+                <p>You have no active itineraries.</p>
+                <Link href="/build" className="text-[#72dc85] underline underline-offset-4">Plan a new trip</Link>
+              </div>
+            ) : (
+              activeTrips.map((trip) => {
+                const start = trip.start_date ? new Date(trip.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase() : "TBD";
+                return (
+                  <BoardingPassCard 
+                    key={trip.id} 
+                    flight={`GT-${trip.id.substring(0, 3).toUpperCase()}`}
+                    destination={trip.title}
+                    date={start}
+                    passenger={`${userName} W.`}
+                    fromCode="HOME"
+                    toCode="DEST"
+                    gate="-"
+                    seat="-"
+                    image={trip.cover_image_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuCd7xK0uE-xLZhJWei4l7EOhJfnBX9LmC97HJO_xmZog8GRUArXTJSlXIuQCJSVasHkxlUIBiyEyuhz59VC_g084l5Wd7xBX9oCS66g6eeJUBGbfdyyREy44noJj2yzFk58X5VA_hPwLXtUMq_hK194wDtwjngRWY6t5e_1zuigFhruBtki5G2vpLIuyERbU3I4fvUY9agKmfpWhl4R3ulfFyoAniL9_ZhHLVUQWKPIA51C0gwdfEFO"}
+                    href={`/itinerary/${trip.id}`}
+                  />
+                );
+              })
+            )}
           </div>
         </section>
 

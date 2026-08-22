@@ -22,8 +22,8 @@ export function Footer({ onContactClick }: FooterProps) {
         <Link href="/build" className="hover:text-white transition-colors">
           Itinerary Builder
         </Link>
-        <Link href="/analytics" className="hover:text-white transition-colors">
-          Analytics
+        <Link href="/calendar" className="hover:text-white transition-colors">
+          Calendar
         </Link>
         <Link href="/profile" className="hover:text-white transition-colors">
           Profile

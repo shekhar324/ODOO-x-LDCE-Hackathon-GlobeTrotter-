@@ -39,7 +39,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Routes that require authentication
-  const protectedPaths = ["/dashboard", "/build", "/analytics", "/profile", "/discover"];
+  const protectedPaths = ["/dashboard", "/build", "/analytics", "/profile", "/discover", "/community", "/calendar", "/itinerary"];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
   // Routes only for guests (redirect authed users away)

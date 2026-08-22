@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -21,8 +21,13 @@ const signInSchema = z.object({
 
 const signUpSchema = z
   .object({
-    fullName: z.string().min(2, "Full name is required"),
+    firstName: z.string().min(2, "First name is required"),
+    lastName: z.string().min(2, "Last name is required"),
     email: z.string().email("Enter a valid email address"),
+    phone: z.string().min(5, "Phone number is required"),
+    city: z.string().min(2, "City is required"),
+    country: z.string().min(2, "Country is required"),
+    additionalInfo: z.string().optional(),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
   })
@@ -168,11 +173,30 @@ function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
 
   const form = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { fullName: "", email: "", password: "", confirmPassword: "" },
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      city: "",
+      country: "",
+      additionalInfo: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
   const onSubmit = async (data: SignUpForm) => {
-    const { error } = await signUp(data.email, data.password, data.fullName);
+    const metadata = {
+      first_name: data.firstName,
+      last_name: data.lastName,
+      full_name: `${data.firstName} ${data.lastName}`,
+      phone_number: data.phone,
+      city: data.city,
+      country: data.country,
+      additional_info: data.additionalInfo || "",
+    };
+    const { error } = await signUp(data.email, data.password, metadata);
     if (error) {
       toast.error("Sign up failed", { description: error.message });
       return;
@@ -180,74 +204,121 @@ function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
     toast.success("Account created!", {
       description: "Check your email to confirm your address, then sign in.",
     });
-    // After sign-up, Supabase sends a confirmation email.
-    // Switch to sign-in tab so the user can proceed.
     onSwitch();
   };
 
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
     >
-      <FormInput
-        id="signup-name"
-        label="Full Name"
-        placeholder="Your name"
-        error={form.formState.errors.fullName?.message}
-        {...form.register("fullName")}
-      />
+      <div className="flex gap-4">
+        <FormInput
+          id="signup-fname"
+          label="First Name"
+          placeholder="First"
+          error={form.formState.errors.firstName?.message}
+          {...form.register("firstName")}
+        />
+        <FormInput
+          id="signup-lname"
+          label="Last Name"
+          placeholder="Last"
+          error={form.formState.errors.lastName?.message}
+          {...form.register("lastName")}
+        />
+      </div>
 
-      <FormInput
-        id="signup-email"
-        label="Email"
-        type="email"
-        placeholder="nomad@example.com"
-        error={form.formState.errors.email?.message}
-        {...form.register("email")}
-      />
+      <div className="flex gap-4">
+        <FormInput
+          id="signup-email"
+          label="Email Address"
+          type="email"
+          placeholder="nomad@example.com"
+          error={form.formState.errors.email?.message}
+          {...form.register("email")}
+        />
+        <FormInput
+          id="signup-phone"
+          label="Phone Number"
+          type="tel"
+          placeholder="+1 234 567 8900"
+          error={form.formState.errors.phone?.message}
+          {...form.register("phone")}
+        />
+      </div>
 
-      <FormInput
-        id="signup-password"
-        label="Password"
-        type={showPw ? "text" : "password"}
-        placeholder="Min. 8 characters"
-        error={form.formState.errors.password?.message}
-        rightSlot={
-          <button
-            type="button"
-            onClick={() => setShowPw((v) => !v)}
-            className="text-[#020202] hover:opacity-60 transition-opacity"
-          >
-            {showPw ? (
-              <IconEyeOff className="w-4 h-4" />
-            ) : (
-              <IconEye className="w-4 h-4" />
-            )}
-          </button>
-        }
-        {...form.register("password")}
-      />
+      <div className="flex gap-4">
+        <FormInput
+          id="signup-city"
+          label="City"
+          placeholder="City"
+          error={form.formState.errors.city?.message}
+          {...form.register("city")}
+        />
+        <FormInput
+          id="signup-country"
+          label="Country"
+          placeholder="Country"
+          error={form.formState.errors.country?.message}
+          {...form.register("country")}
+        />
+      </div>
 
-      <FormInput
-        id="signup-confirm"
-        label="Confirm Password"
-        type={showPw ? "text" : "password"}
-        placeholder="Repeat password"
-        error={form.formState.errors.confirmPassword?.message}
-        {...form.register("confirmPassword")}
-      />
+      <div className="flex flex-col gap-2">
+        <label className="font-sans text-sm text-[#020202]" htmlFor="signup-info">
+          Additional Information
+        </label>
+        <textarea
+          id="signup-info"
+          placeholder="Dietary requirements, travel preferences..."
+          className="w-full px-4 py-4 bg-transparent border border-[#020202] font-sans text-sm text-[#020202] placeholder:text-[#889486] focus:outline-none focus:ring-1 focus:ring-[#020202] transition-shadow resize-none h-24"
+          {...form.register("additionalInfo")}
+        />
+      </div>
+
+      <div className="flex gap-4">
+        <FormInput
+          id="signup-password"
+          label="Password"
+          type={showPw ? "text" : "password"}
+          placeholder="Min. 8 characters"
+          error={form.formState.errors.password?.message}
+          rightSlot={
+            <button
+              type="button"
+              onClick={() => setShowPw((v) => !v)}
+              className="text-[#020202] hover:opacity-60 transition-opacity"
+            >
+              {showPw ? (
+                <IconEyeOff className="w-4 h-4" />
+              ) : (
+                <IconEye className="w-4 h-4" />
+              )}
+            </button>
+          }
+          {...form.register("password")}
+        />
+        <FormInput
+          id="signup-confirm"
+          label="Confirm Password"
+          type={showPw ? "text" : "password"}
+          placeholder="Repeat password"
+          error={form.formState.errors.confirmPassword?.message}
+          {...form.register("confirmPassword")}
+        />
+      </div>
 
       <button
         type="submit"
         disabled={form.formState.isSubmitting}
-        className="w-full mt-2 py-4 bg-[#2d9b4c] text-white font-sans text-sm hover:opacity-90 transition-opacity flex justify-center items-center gap-2 disabled:opacity-60 cursor-pointer"
+        className="w-full mt-4 py-4 bg-[#2d9b4c] text-white font-sans text-sm hover:opacity-90 transition-opacity flex justify-center items-center gap-2 disabled:opacity-60 cursor-pointer"
       >
-        {form.formState.isSubmitting ? "Creating account…" : "Create Account"}
+        {form.formState.isSubmitting ? "Creating account…" : "Register User"}
         <IconArrowRight className="w-5 h-5" />
       </button>
 
-      <div className="mt-4 pt-6 border-t border-[#efefe7] text-center">
+      <div className="mt-2 pt-6 border-t border-[#efefe7] text-center">
         <p className="font-sans text-sm text-[#020202]">
           Already have an account?{" "}
           <button
@@ -265,7 +336,7 @@ function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function AuthPage() {
+function AuthPageContent() {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState<"signin" | "signup">(
     searchParams.get("tab") === "signup" ? "signup" : "signin"
@@ -344,7 +415,7 @@ export default function AuthPage() {
         </div>
 
         {/* Card */}
-        <div className="w-full max-w-[480px] bg-white shadow-2xl shadow-black/50 p-10 relative z-20">
+        <div className="w-full max-w-[640px] bg-white shadow-2xl shadow-black/50 p-10 relative z-20">
           <AnimatePresence mode="wait">
             <motion.div
               key={tab}
@@ -363,5 +434,13 @@ export default function AuthPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center text-white font-sans tracking-widest text-sm uppercase">Loading...</div>}>
+      <AuthPageContent />
+    </Suspense>
   );
 }
