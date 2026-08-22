@@ -5,6 +5,7 @@ import { QueryProvider } from "@/providers/query-provider";
 import { LenisProvider } from "@/providers/lenis-provider";
 import { AuthProvider } from "@/context/auth-context";
 import { Toaster } from "@/components/ui/sonner";
+import { TravelAssistant } from "@/components/editorial/travel-assistant";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -45,6 +46,7 @@ export default function RootLayout({
           <QueryProvider>
             <AuthProvider>
               {children}
+              <TravelAssistant />
               <Toaster position="bottom-right" />
             </AuthProvider>
           </QueryProvider>
