@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.15"
-  }
   public: {
     Tables: {
       activities: {
@@ -178,30 +173,107 @@ export type Database = {
           },
         ]
       }
+      calendar_events: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string | null
+          event_date: string
+          start_time: string | null
+          end_time: string | null
+          location: string | null
+          event_type: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description?: string | null
+          event_date: string
+          start_time?: string | null
+          end_time?: string | null
+          location?: string | null
+          event_type?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string | null
+          event_date?: string
+          start_time?: string | null
+          end_time?: string | null
+          location?: string | null
+          event_type?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_posts: {
         Row: {
           author_id: string
+          cover_image_url: string | null
           created_at: string
           description: string | null
+          destination: string | null
+          donts: string | null
+          dos: string | null
+          how_it_went: string | null
           id: string
+          recommendations: string | null
+          story: string | null
+          tips: string | null
           title: string
-          trip_id: string
+          trip_id: string | null
+          updated_at: string | null
         }
         Insert: {
           author_id: string
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          destination?: string | null
+          donts?: string | null
+          dos?: string | null
+          how_it_went?: string | null
           id?: string
+          recommendations?: string | null
+          story?: string | null
+          tips?: string | null
           title: string
-          trip_id: string
+          trip_id?: string | null
+          updated_at?: string | null
         }
         Update: {
           author_id?: string
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          destination?: string | null
+          donts?: string | null
+          dos?: string | null
+          how_it_went?: string | null
           id?: string
+          recommendations?: string | null
+          story?: string | null
+          tips?: string | null
           title?: string
-          trip_id?: string
+          trip_id?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -654,9 +726,8 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Database
+type DefaultSchema = Database["public"]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends

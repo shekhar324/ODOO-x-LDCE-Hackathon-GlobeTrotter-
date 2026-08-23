@@ -11,6 +11,8 @@ import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/types";
 
+import { clearUserDataLocalStorage } from "@/lib/storage";
+
 type Profile = Tables<"profiles">;
 
 interface AuthContextType {
@@ -61,6 +63,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select("*")
         .eq("id", userId)
         .single();
+
+      if (!data) {
+        // Auto-create missing profile row to satisfy foreign key constraints
+        const { data: userData } = await supabase.auth.getUser();
+        const u = userData?.user;
+        if (u) {
+          const profileData = {
+            id: u.id,
+            full_name: u.user_metadata?.full_name || u.email?.split("@")[0] || "Explorer",
+            username: u.user_metadata?.username || u.email?.split("@")[0] || "explorer",
+            avatar_url: u.user_metadata?.avatar_url || null,
+            updated_at: new Date().toISOString(),
+          };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supabase.from("profiles") as any).upsert(profileData);
+          setProfile(profileData as unknown as Profile);
+          return;
+        }
+      }
+
       setProfile(data ?? null);
     },
     [supabase]
@@ -143,6 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    clearUserDataLocalStorage();
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);

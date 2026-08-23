@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { NavigationPill } from "@/components/editorial/navigation-pill";
 import { Footer } from "@/components/editorial/footer";
@@ -16,18 +16,41 @@ import { createClient } from "@/lib/supabase/client";
 export default function ProfilePage() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { data: trips } = useTrips();
   const supabase = createClient();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [editForm, setEditForm] = useState({
-    full_name: profile?.full_name || "",
-    username: profile?.username || "",
-    bio: profile?.bio || "",
-    city: profile?.city || "",
-    country: profile?.country || "",
+    full_name: "",
+    username: "",
+    bio: "",
+    city: "",
+    country: "",
   });
+
+  // Sync form when profile data loads or modal opens
+  useEffect(() => {
+    if (profile && isEditModalOpen) {
+      setEditForm({
+        full_name: profile.full_name || "",
+        username: profile.username || "",
+        bio: profile.bio || "",
+        city: profile.city || "",
+        country: profile.country || "",
+      });
+    }
+  }, [profile, isEditModalOpen]);
+
+  // Lock body scroll when modal open
+  useEffect(() => {
+    if (isEditModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isEditModalOpen]);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -36,8 +59,8 @@ export default function ProfilePage() {
 
     setIsUpdating(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.from("profiles") as any)
         .update({
           full_name: editForm.full_name.trim() || null,
           username: editForm.username.trim() || null,
@@ -50,11 +73,11 @@ export default function ProfilePage() {
 
       if (error) throw error;
       toast.success("Profile updated successfully!");
+      await refreshProfile();
       setIsEditModalOpen(false);
-    } catch (err: any) {
-      toast.error("Failed to update profile", {
-        description: err.message || "An unexpected error occurred",
-      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred";
+      toast.error("Failed to update profile", { description: message });
     } finally {
       setIsUpdating(false);
     }
@@ -261,7 +284,7 @@ export default function ProfilePage() {
         {/* --- Edit Profile Modal --- */}
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="backdrop-blur-2xl bg-[#141414] border border-white/15 text-white max-w-md w-full rounded-3xl p-6 sm:p-8 space-y-6">
+            <div className="backdrop-blur-2xl bg-[#141414] border border-white/15 text-white max-w-md w-full max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8 space-y-6" data-lenis-prevent>
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-light text-white">Edit Profile</h2>
                 <button

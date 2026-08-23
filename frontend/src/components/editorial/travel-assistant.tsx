@@ -215,7 +215,7 @@ export function TravelAssistant() {
       // Add assistant reply
       const assistantMessage: ChatMessage = {
         role: "assistant",
-        content: result.reply,
+        content: result.reply || "",
       };
       setMessages([...updatedMessages, assistantMessage]);
       setIsLoading(false);

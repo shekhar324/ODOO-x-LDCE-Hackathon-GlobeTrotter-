@@ -22,6 +22,27 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
 
     lenisRef.current = lenis;
 
+    // Stop Lenis from handling scroll when cursor/touch is inside a
+    // [data-lenis-prevent] element (modals, custom scrollable panels).
+    const preventScroll = (e: WheelEvent | TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-lenis-prevent]")) {
+        lenis.stop();
+        // Re-start lenis shortly after so normal page scroll resumes
+        // when user moves outside the prevent zone.
+        clearTimeout((preventScroll as unknown as { _tid?: ReturnType<typeof setTimeout> })._tid);
+        (preventScroll as unknown as { _tid?: ReturnType<typeof setTimeout> })._tid = setTimeout(
+          () => lenis.start(),
+          200
+        );
+      } else {
+        lenis.start();
+      }
+    };
+
+    window.addEventListener("wheel", preventScroll, { passive: true });
+    window.addEventListener("touchmove", preventScroll, { passive: true });
+
     // RAF loop
     let rafId: number;
     function raf(time: number) {
@@ -42,6 +63,8 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelAnimationFrame(rafId);
       resizeObserver.disconnect();
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
       lenis.destroy();
       lenisRef.current = null;
     };
