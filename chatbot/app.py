@@ -8,9 +8,9 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# CORS configuration — allow the frontend origin during development
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
-CORS(app, origins=[o.strip() for o in cors_origins.split(",")], supports_credentials=False)
+# CORS configuration — allow frontend origins during development
+cors_origins = os.getenv("CORS_ORIGINS", "*")
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
 
 # Maximum message length to prevent abuse
 MAX_MESSAGE_LENGTH = 4000
@@ -79,7 +79,54 @@ def chat():
     return jsonify({"reply": reply})
 
 
+@app.route("/api/generate-itinerary", methods=["POST"])
+def generate_itinerary_route():
+    """
+    Handle AI itinerary generation requests.
+    Expects JSON with destination, dates, budget, currency, interests, travel_style, travelers, custom_instructions.
+    """
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON."}), 400
+
+    try:
+        data = request.get_json(silent=True) or {}
+        destination = data.get("destination", "")
+        if not destination or not isinstance(destination, str):
+            return jsonify({"error": "Destination is required."}), 400
+
+        start_date = data.get("start_date", "")
+        end_date = data.get("end_date", "")
+        budget = float(data.get("budget", 0))
+        currency = data.get("currency", "USD")
+        interests = data.get("interests", [])
+        travel_style = data.get("travel_style", "Balanced")
+        travelers = int(data.get("travelers", 1))
+        custom_instructions = data.get("custom_instructions", "")
+
+        from gemini_service import generate_ai_itinerary
+        result = generate_ai_itinerary(
+            destination=destination,
+            start_date=start_date,
+            end_date=end_date,
+            budget=budget,
+            currency=currency,
+            interests=interests,
+            travel_style=travel_style,
+            travelers=travelers,
+            custom_instructions=custom_instructions
+        )
+
+        return jsonify(result)
+    except Exception as err:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "error": f"Internal server error generating itinerary: {str(err)}",
+            "stops": []
+        }), 500
+
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     debug = os.getenv("FLASK_DEBUG", "1") == "1"
-    app.run(port=port, debug=debug)
+    app.run(host="0.0.0.0", port=port, debug=debug)

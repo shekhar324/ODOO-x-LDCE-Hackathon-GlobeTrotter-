@@ -127,8 +127,11 @@ export default function AdminPage() {
                           {new Date(profile.created_at).toLocaleDateString()}
                         </td>
                         <td className="py-4 px-6 text-right">
-                          <button className="text-xs uppercase tracking-widest border border-[#0e0e0e] px-4 py-1 rounded-full hover:bg-[#0e0e0e] hover:text-white transition-colors">
-                            View
+                          <button 
+                            onClick={() => router.push("/profile")}
+                            className="text-xs uppercase tracking-widest border border-[#0e0e0e] px-4 py-1 rounded-full hover:bg-[#0e0e0e] hover:text-white transition-colors cursor-pointer"
+                          >
+                            View Profile
                           </button>
                         </td>
                       </tr>

@@ -4,6 +4,7 @@ import { IconHeart, IconArrowRight, IconCoins, IconTrendingUp } from "@tabler/ic
 import { EditorialHeading } from "./editorial-heading";
 
 interface DestinationCardProps {
+  id?: string;
   title: string;
   location: string;
   description: string;

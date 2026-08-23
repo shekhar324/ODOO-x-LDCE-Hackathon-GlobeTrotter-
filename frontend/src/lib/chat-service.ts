@@ -1,12 +1,9 @@
 /**
- * Chat service for communicating with the Flask chatbot backend.
- * All Flask API communication is centralized here — no scattered fetch() calls.
+ * Chat service for communicating with the travel assistant.
+ * Requests are proxied through Next.js API route (/api/chat) to the Flask backend.
  */
 
-const CHATBOT_API_URL =
-  process.env.NEXT_PUBLIC_CHATBOT_API_URL || "http://localhost:5000";
-
-const CHAT_ENDPOINT = `${CHATBOT_API_URL}/api/chat`;
+const CHAT_ENDPOINT = "/api/chat";
 
 /** Timeout for chat requests (ms) */
 const REQUEST_TIMEOUT = 30_000;
@@ -94,16 +91,9 @@ export async function sendChatMessage(
       };
     }
 
-    if (err instanceof TypeError && err.message.includes("fetch")) {
-      return {
-        error:
-          "Unable to reach the travel assistant. Please make sure the server is running.",
-      };
-    }
-
     return {
       error:
-        "The travel assistant is temporarily unavailable. Please try again.",
+        "Unable to reach the travel assistant. Please make sure the backend server is running.",
     };
   }
 }

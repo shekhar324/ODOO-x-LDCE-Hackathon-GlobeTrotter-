@@ -19,7 +19,7 @@ export function Footer({ onContactClick }: FooterProps) {
         <Link href="/discover" className="hover:text-white transition-colors">
           Discover
         </Link>
-        <Link href="/build" className="hover:text-white transition-colors">
+        <Link href="/itinerary/new" className="hover:text-white transition-colors">
           Itinerary Builder
         </Link>
         <Link href="/calendar" className="hover:text-white transition-colors">

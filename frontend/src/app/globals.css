@@ -93,6 +93,12 @@ html.lenis, html.lenis body {
 
 .lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Explicit modal/overflow scroll container - traps scroll inside */
+[data-lenis-prevent] {
+  overscroll-behavior: contain;
 }
 
 .lenis-stopped {
@@ -101,4 +107,13 @@ html.lenis, html.lenis body {
 
 .lenis-scrolling iframe {
   pointer-events: none;
+}
+
+/* Alias for hiding scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
